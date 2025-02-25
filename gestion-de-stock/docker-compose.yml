@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  mysql:
+    container_name: mysql-gestiondestock
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: "Med123456*"
+      MYSQL_DATABASE: "gestion"
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - gestiondestock-network
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+
+  gestiondestock-api:
+    container_name: gestiondestock-api
+    image: gestiondestock-backend
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/gestion?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Med123456*
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - gestiondestock-network
+    restart: unless-stopped
+  gestiondestock-ui:
+    container_name: gestiondestock-ui
+    image: gestiondestock-frontend
+    ports:
+      - "8080:80"
+    networks:
+      - gestiondestock-network
+    restart: unless-stopped
+
+networks:
+  gestiondestock-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local

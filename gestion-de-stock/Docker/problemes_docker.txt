@@ -1,0 +1,18 @@
+2️⃣ Warning JSONArgsRecommended
+
+JSON arguments recommended for CMD to prevent unintended behavior related to OS signals (line 29)
+Cela signifie que la commande CMD dans ton Dockerfile est en string shell format, et Docker recommande de la mettre en JSON array format.
+✅ 2️⃣ Corriger le warning JSONArgsRecommended
+Dans ton Dockerfile, remplace :
+
+dockerfile
+
+CMD java -jar /app/gestiondestock.jar
+
+par :
+
+CMD ["java", "-jar", "/app/gestiondestock.jar"]
+Cela évite des problèmes d'interprétation des signaux système.
+------------------------------------
+DockerHub & Github Actions tokens and secrets?
+on utilise secrets on github actions to give me the access to modify the images in dockerhub
