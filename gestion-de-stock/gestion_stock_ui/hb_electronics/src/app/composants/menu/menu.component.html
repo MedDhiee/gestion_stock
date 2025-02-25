@@ -1,0 +1,17 @@
+<div class="accordion" id="accordionExample">
+    <div class="accordion-item" *ngFor="let menu of menuProperties">
+      <h2 class="accordion-header" id="{{menu.id}}">
+        <button 
+          class="btn" 
+          type="button" 
+          [ngClass]="{'blue-color': menu.active}" 
+          (click)="navigate(menu)">
+          <a href="javascript:void(0);">
+            &nbsp;&nbsp;<i class="{{menu.icon}}"></i>&nbsp;
+            {{menu.titre}}
+          </a>
+        </button>
+      </h2>
+    </div>
+  </div>
+  

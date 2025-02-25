@@ -1,0 +1,38 @@
+<div class="row mb-1 mr-0 custom-border">
+   
+    <!--  details commande-->
+    <div class="col-md-3 custom-border-right mb-1 mt-1 ">
+      <div class="col">
+        <div class="row">
+          <div class="col-md-1"><i class="fas fa-qrcode blue-color"></i></div>
+          <div class="col-md-10">{{ commande.code }}</div>
+        </div>
+        <div class="row">
+          <div class="col-md-1"><i class="fas fa-calendar-check blue-color"></i></div>
+          <div class="col-md-10">{{ commande.dateCommande }}</div>
+        </div>
+        <div class="row">
+          <div class="col-md-1"><i class="fas fa-cart-arrow-down blue-color"></i></div>
+          <div class="col-md-10">{{ commande.etatCommande }}</div>
+        </div>
+      </div>
+    </div>
+  
+    <!--  boutons action-->
+    <div class="col-md-3 mb-1 mt-1 ">
+      <div class="row">
+        <div class="col-md-6 text-center">
+          <button type="button" class="btn btn-link" (click)="modifierClick()">
+            <i class="fas fa-pencil-alt blue-color"></i>&nbsp;
+            Modifier
+          </button>
+        </div>
+        <div class="col-md-6 text-center">
+          <button type="button" class="btn btn-link">
+            <i class="fas fa-trash-alt blue-color"></i>&nbsp;
+            Supprimer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>

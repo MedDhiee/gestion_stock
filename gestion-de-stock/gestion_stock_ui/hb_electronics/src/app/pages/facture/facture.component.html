@@ -1,0 +1,38 @@
+<div class="container">
+  <h2 class="titre">Recherche par mois et année</h2>
+  <div class="row">
+    <div class="col">
+      <div class="form-group">
+        <label for="moisSelectionne">Sélectionnez un mois :</label>
+        <input type="number" id="moisSelectionne" class="form-control" [(ngModel)]="moisSelectionne" min="1" max="12" />
+      </div>
+    </div>
+    <div class="col">
+      <div class="form-group">
+        <label for="anneeSelectionnee">Sélectionnez une année :</label>
+        <input type="number" id="anneeSelectionnee" class="form-control" [(ngModel)]="anneeSelectionnee" />
+      </div>
+    </div>
+    <div class="col">
+      <button class="btn btn-primary mt-4" (click)="rechercherParMoisEtAnnee()">Rechercher</button>
+    </div>
+  </div>
+<hr>
+  <div *ngIf="moisSelectionne !== null && anneeSelectionnee !== null">
+    <h3>Résultats pour le mois {{ moisSelectionne }} de l'année {{ anneeSelectionnee }}</h3>
+    <p>Total prix de vente: {{ totalPrixVenteSelectionne }} TND</p>
+    <p>Total prix d'achat: {{ totalPrixAchatSelectionne }} TND</p>
+    <p>Bénéfice: {{ beneficeSelectionne }} TND</p>
+    <hr>
+    <div class="form-group">
+      <label for="salaireOuvrier">Salaire d'ouvrier :</label>
+      <input type="number" id="salaireOuvrier" class="form-control" [(ngModel)]="salaireOuvrier" />
+    </div>
+    <div class="form-group">
+      <label for="facturesInternetSteg">Factures (Internet + STEG) :</label>
+      <input type="number" id="facturesInternetSteg" class="form-control" [(ngModel)]="facturesInternetSteg" />
+    </div>
+    <button class="btn btn-primary mt-2" (click)="calculerBeneficeFinal()">Calculer le bénéfice final</button>
+    <p *ngIf="beneficeFinal !== null">Bénéfice final: {{ beneficeFinal }} TND</p>
+  </div>
+</div>

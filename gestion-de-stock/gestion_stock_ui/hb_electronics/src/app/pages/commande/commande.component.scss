@@ -1,0 +1,11 @@
+.btn-link {
+    color: #000; /* Changez cette valeur pour la couleur désirée */
+    text-decoration: none; /* Enlève la soulignure */
+  }
+  
+  .btn-link:hover,
+  .btn-link:focus,
+  .btn-link:active {
+    color: rgb(111, 166, 230);
+    text-decoration: none; /* Enlève la soulignure lors du survol ou du clic */
+  }

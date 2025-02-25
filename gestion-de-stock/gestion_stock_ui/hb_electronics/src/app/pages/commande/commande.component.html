@@ -1,0 +1,57 @@
+<div class="col">
+  <div class="row m-3">
+    <div class="col-md-8 p-0">
+      <h1 class="titre">Commandes</h1>
+    </div>
+    <div class="col-md-4 text-right">
+      <app-boutton-action
+        [isImporterVisible]="false"
+        (clickEvent)="nouvelleCommande()"
+      ></app-boutton-action>
+      <form class="d-inline-block ml-2" (ngSubmit)="onSearch()">
+        <input type="date" [(ngModel)]="searchDate" name="searchDate" class="form-control d-inline-block w-auto" />
+        <button type="submit" class="btn btn-primary">Rechercher</button>
+      </form>
+    </div>
+  </div>
+  <div class="col m-3" *ngFor="let date of filteredCommandesParDate.keys()">
+    <div class="accordion" id="accordionExample{{date}}">
+      <div class="card">
+        <div class="card-header" id="headingOne{{date}}">
+          <h2 class="mb-0">
+            <button class="btn btn-link btn-block text-left" type="button" data-bs-toggle="collapse" [attr.data-bs-target]="'#collapseOne' + date" aria-expanded="true" [attr.aria-controls]="'collapseOne' + date">
+              Commandes du {{date}} - Total: {{ totalParDate.get(date) }} TND
+            </button>
+          </h2>
+        </div>
+        <div id="collapseOne{{date}}" class="collapse" [attr.aria-labelledby]="'headingOne' + date" [attr.data-bs-parent]="'#accordionExample'+ date">
+          <div class="card-body">
+            <div *ngFor="let cmd of filteredCommandesParDate.get(date)">
+              <h5>Commande ID: {{cmd.id}}</h5>
+              <button type="button" class="btn btn-success" (click)="exportPdf(cmd.id)">
+                <i class="fas fa-cloud-download-alt"></i>&nbsp;
+                Exporter
+              </button>
+              <button type="button" class="btn btn-danger" (click)="deleteCommande(cmd.id)">
+                <i class="fas fa-trash-alt"></i>&nbsp;
+                Supprimer
+              </button>
+
+              <p>Total commande: {{ calculerTotalCommande(cmd.id)}} TND</p>
+              <div *ngFor="let ligne of mapLignesCommande.get(cmd.id)">
+                <app-detail-commande
+                  [ligneCommande]="ligne"
+                ></app-detail-commande>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row mb-3" *ngIf="listeCommandes.length">
+    <div class="col-md-12 text-center">
+      <app-pagination></app-pagination>
+    </div>
+  </div>
+</div>

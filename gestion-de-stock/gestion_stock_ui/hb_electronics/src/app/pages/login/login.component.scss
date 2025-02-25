@@ -1,0 +1,24 @@
+.my-container{
+    margin-top: 100px;
+    margin-bottom: 163px;
+    max-width: 500px;
+}
+.logo-img {
+    width: 280px; /* Réduisez cette valeur pour ajuster la taille de l'image */
+    height: auto; /* Maintient le ratio d'aspect */
+  }
+  body, html {
+    height: 100%;
+    margin: 0;
+  }
+  
+  .full-page-container {
+    background-image: url('/assets/bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
