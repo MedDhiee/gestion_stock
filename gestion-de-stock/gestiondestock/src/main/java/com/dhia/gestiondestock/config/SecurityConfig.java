@@ -25,6 +25,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebMvcConfigurer {
 
+    @Value("${application.cors.origins:*}")
+    private List<String> allowedOrigin;
+
     @Autowired
     private ApplicationUserDetailsService applicationUserDetailsService;
 
@@ -69,9 +72,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebM
         final CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
         // Don't do this in production, use a proper list  of allowed origins
-        config.setAllowedOriginPatterns(List.of("http://localhost:4200", "http://localhost:8080"));
-        config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization"));
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "OPTIONS", "DELETE", "PATCH"));
+        config.setAllowedOrigins(allowedOrigin);
+        config.setAllowedHeaders(Arrays.asList("*"));
+        config.setAllowedMethods(Arrays.asList("*"));
         source.registerCorsConfiguration("/**", config);
         // some comment here
         return new CorsFilter(source);
