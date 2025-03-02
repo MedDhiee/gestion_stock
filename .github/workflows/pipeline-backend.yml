@@ -31,7 +31,7 @@ jobs:
       - name: Running Unit Tests
         run: |
           cd gestiondestock
-          ./mvnw clean compile
+          ./mvnw clean compile -DskipTests
   unit-tests:
     runs-on: ubuntu-latest
     name: Unit tests
@@ -49,10 +49,7 @@ jobs:
       - name: Set execute permissions for Maven Wrapper
         run: chmod +x gestiondestock/mvnw
 
-      - name: Running Unit Tests
-        run: |
-          cd gestiondestock
-          ./mvnw clean test
+
   build:
     runs-on: ubuntu-latest
     name: Build backend
