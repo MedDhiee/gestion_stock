@@ -89,8 +89,8 @@ jobs:
         with:
           java-version: '17'
           distribution: 'corretto'
-      - name: Debug Current Directory
-        run: pwd && ls -l
+      - name: Set execute permissions for Maven Wrapper
+        run: chmod +x gestiondestock/mvnw
 
       - name: Extract project version
         id: extract_version
