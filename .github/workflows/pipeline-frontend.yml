@@ -3,7 +3,7 @@ name: gestion-de-stock Frontend Pipeline
 on:
   push:
     branches:
-      - ci/pipeline
+      - master
     paths:
       - gestiondestock-ui/**
       - Docker/frontend/**
