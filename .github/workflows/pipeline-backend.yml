@@ -1,4 +1,4 @@
-name: gestion-de-stock Backend API Pipeline
+name: gestion-stock Backend API Pipeline
 
 on:
   push:

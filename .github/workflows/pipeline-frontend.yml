@@ -1,4 +1,4 @@
-name: gestion-de-stock Frontend Pipeline
+name: gestion-stock Frontend Pipeline
 
 on:
   push:
