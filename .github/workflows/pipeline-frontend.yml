@@ -12,12 +12,14 @@ on:
 jobs:
   build-image:
     name: Build FE Docker image
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Set execute permissions for Maven Wrapper
+        run: chmod +x gestiondestock/jq
       - name: Extract project version
         id: extract_version
         run: |
@@ -41,7 +43,7 @@ jobs:
 
   #deploy:
    # name: Deploy Frontend
-  #  runs-on: self-hosted
+  #  runs-on: ubuntu-latest
    # needs: [ build-image ]
     #steps:
 
