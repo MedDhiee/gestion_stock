@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - gestiondestock/**
+      - '**/gestiondestock/**'
       - Docker/backend/**
       - 'docker-compose.yml'
       - .github/workflows/*-backend.yml
