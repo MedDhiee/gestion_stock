@@ -18,8 +18,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Set execute permissions for Maven Wrapper
-        run: chmod +x gestiondestock/jq
+
       - name: Extract project version
         id: extract_version
         run: |
