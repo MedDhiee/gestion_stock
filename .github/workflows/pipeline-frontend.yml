@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - gestiondestock-ui/**
+      - gestion_stock_ui/hb_electronics/**
       - Docker/frontend/**
       - 'docker-compose.yml'
       - .github/workflows/*-frontend.yml
@@ -34,7 +34,7 @@ jobs:
       - name: Build & Push to DockerHub
         uses: docker/build-push-action@v5
         with:
-          context: gestiondestock-ui
+          context: gestion_stock_ui/hb_electronics
           file: Docker/frontend/Dockerfile
           push: true
           platforms: linux/amd64
