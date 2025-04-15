@@ -111,7 +111,7 @@ jobs:
           file: Docker/backend/Dockerfile
           push: true
           platforms: linux/amd64
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/gestiondestock-api:${{ steps.extract_version.outputs.VERSION }},${{ secrets.DOCKERHUB_USERNAME }}/gestiondestock-api:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/gestiondest ock-api:${{ steps.extract_version.outputs.VERSION }},${{ secrets.DOCKERHUB_USERNAME }}/gestiondestock-api:latest
           build-args: |
             PROFILE=dev
             APP_VERSION=${{ steps.extract_version.outputs.VERSION }}
