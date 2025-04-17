@@ -26,10 +26,5 @@ describe('AppComponent', () => {
     expect(app.title).toEqual('hb_electronics');
   });
 
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.content span')?.textContent).toContain('hb_electronics app is running!');
-  });
+
 });

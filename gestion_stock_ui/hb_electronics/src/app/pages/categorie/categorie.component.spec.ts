@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CategorieComponent } from './categorie.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { BouttonActionComponent } from 'src/app/composants/boutton-action/boutton-action.component';
 
 describe('CategorieComponent', () => {
   let component: CategorieComponent;
@@ -8,7 +10,9 @@ describe('CategorieComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ CategorieComponent ]
+      imports: [HttpClientTestingModule], 
+      declarations: [ CategorieComponent,
+        BouttonActionComponent  ]
     })
     .compileComponents();
 

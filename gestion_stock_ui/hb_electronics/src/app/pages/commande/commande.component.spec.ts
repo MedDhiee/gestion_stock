@@ -1,6 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CommandeComponent } from './commande.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { BouttonActionComponent } from 'src/app/composants/boutton-action/boutton-action.component';
+import { FormsModule } from '@angular/forms';
 
 describe('CommandeComponent', () => {
   let component: CommandeComponent;
@@ -8,7 +11,8 @@ describe('CommandeComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ CommandeComponent ]
+      imports: [HttpClientTestingModule,FormsModule], 
+      declarations: [ CommandeComponent,BouttonActionComponent  ]
     })
     .compileComponents();
 

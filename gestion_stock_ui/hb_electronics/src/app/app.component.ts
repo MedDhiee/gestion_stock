@@ -7,7 +7,7 @@ import { UserService } from './services/user/user.service';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent{
-
+  title = 'hb_electronics';
  
 }
 
