@@ -15,8 +15,8 @@ export class DetailArticleComponent {
   suppressionResult = new EventEmitter();
   gain :number | undefined;
   constructor(
-    private router: Router,
-    private articleService: ArticleService
+    private readonly router: Router,
+    private readonly articleService: ArticleService
   ) { }
 
   ngOnInit(): void {
@@ -34,10 +34,13 @@ export class DetailArticleComponent {
   confirmerEtSupprimerArticle(): void {
     if (this.articleDto.id) {
       this.articleService.deleteArticle(this.articleDto.id)
-      .subscribe(res => {
-        this.suppressionResult.emit('success');
-      }, error => {
-        this.suppressionResult.emit(error.error.error);
+      .subscribe({
+        next: res => {
+          this.suppressionResult.emit('success');
+        },
+        error: error => {
+          this.suppressionResult.emit(error.error.error);
+        }
       });
   }
   }

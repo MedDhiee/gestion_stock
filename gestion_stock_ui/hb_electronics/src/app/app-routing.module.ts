@@ -11,7 +11,6 @@ import { CategorieComponent } from './pages/categorie/categorie.component';
 import { NouvelleCategorieComponent } from './pages/nouvelle-categorie/nouvelle-categorie.component';
 import { ApplicationGuardService } from './services/guard/application-guard.service';
 import { NouvelCommandeComponent } from './composants/nouvel-commande/nouvel-commande.component';
-import { LoginGuardService } from './services/guard/login-guard.service';
 
 const routes: Routes = [
   
