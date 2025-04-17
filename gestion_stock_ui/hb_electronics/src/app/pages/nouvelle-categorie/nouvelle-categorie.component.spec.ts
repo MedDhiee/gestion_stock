@@ -3,7 +3,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NouvelleCategorieComponent } from './nouvelle-categorie.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute } from '@angular/router';
-import { of } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 
 describe('NouvelleCategorieComponent', () => {
