@@ -72,7 +72,6 @@ jobs:
             -Dsonar.javascript.lcov.reportPaths=coverage/hb_electronics/lcov.info \
             -Dsonar.host.url=https://gestionstock-sonarqube.onrender.com \
             -Dsonar.login=$SONAR_TOKEN \
-            -Dsonar.sourceEncoding=UTF-8
 
   #deploy:
    # name: Deploy Frontend
