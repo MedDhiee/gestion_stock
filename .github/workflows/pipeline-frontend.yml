@@ -9,6 +9,7 @@ on:
       - Docker/frontend/**
       - 'docker-compose.yml'
       - .github/workflows/*-frontend.yml
+
 jobs:
   build-image:
     name: Build FE Docker image
@@ -39,6 +40,39 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/gestiondestock-ui:latest,${{ secrets.DOCKERHUB_USERNAME }}/gestiondestock-ui:${{ steps.extract_version.outputs.VERSION }}
+
+  sonarqube-analysis:
+    name: SonarQube Frontend Analysis
+    runs-on: ubuntu-latest
+    needs: [build-image]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install SonarScanner CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unzip openjdk-17-jre
+          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+          unzip sonar-scanner-cli-5.0.1.3006-linux.zip
+          sudo mv sonar-scanner-5.0.1.3006-linux /opt/sonar-scanner
+          sudo ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner
+
+      - name: SonarQube Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          cd gestion_stock_ui/hb_electronics
+          sonar-scanner \
+            -Dsonar.projectKey=frontend \
+            -Dsonar.projectName=frontend \
+            -Dsonar.sources=src \
+            -Dsonar.javascript.lcov.reportPaths=coverage/hb_electronics/lcov.info \
+            -Dsonar.host.url=http://YOUR_SONAR_SERVER:9000 \
+            -Dsonar.login=$SONAR_TOKEN \
+            -Dsonar.sourceEncoding=UTF-8
 
   #deploy:
    # name: Deploy Frontend
