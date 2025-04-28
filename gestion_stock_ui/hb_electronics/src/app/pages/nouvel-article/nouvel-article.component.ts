@@ -23,11 +23,11 @@ export class NouvelArticleComponent implements OnInit {
   
 
   constructor(
-    private router: Router,
-    private activatedRoute: ActivatedRoute,
-    private articleService: ArticleService,
-    private categoryService: CategoryService,
-    private photoService: PhotosService
+    private readonly router: Router,
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly articleService: ArticleService,
+    private readonly categoryService: CategoryService,
+    private readonly photoService: PhotosService
   ) { }
 
   ngOnInit(): void {
@@ -41,7 +41,7 @@ export class NouvelArticleComponent implements OnInit {
       this.articleService.findArticleById(idArticle)
       .subscribe(article => {
         this.articleDto = article;
-        this.categorieDto = this.articleDto.category ? this.articleDto.category : {};
+        this.categorieDto = this.articleDto.category ?? {};
       });
     }
   }
@@ -53,10 +53,13 @@ export class NouvelArticleComponent implements OnInit {
   enregistrerArticle(): void {
     this.articleDto.category = this.categorieDto;
     this.articleService.enregistrerArticle(this.articleDto)
-    .subscribe(art => {
-      this.savePhoto(art.id, art.codeArticle);
-    }, error => {
-      this.errorMsg = error.error.errors;
+    .subscribe({
+      next: (art) => {
+        this.savePhoto(art.id, art.codeArticle);
+      },
+      error: (error) => {
+        this.errorMsg = error.error.errors;
+      }
     });
   }
 

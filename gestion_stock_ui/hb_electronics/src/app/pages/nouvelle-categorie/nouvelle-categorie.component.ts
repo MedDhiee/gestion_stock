@@ -13,9 +13,9 @@ export class NouvelleCategorieComponent implements OnInit {
   categoryDto: CategoryDto = {};
   errorMsg: Array<string> = [];
   constructor(
-    private router: Router,
-    private activatedRoute: ActivatedRoute,
-    private categoryService: CategoryService
+    private readonly router: Router,
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly categoryService: CategoryService
   ) { }
 
   ngOnInit(): void {
@@ -34,10 +34,13 @@ export class NouvelleCategorieComponent implements OnInit {
 
   enregistrerCategory(): void {
     this.categoryService.enregistrerCategory(this.categoryDto)
-    .subscribe(res => {
-      this.router.navigate(['categorie']);
-    }, error => {
-      this.errorMsg = error.error.errors;
+    .subscribe({
+      next: res => {
+        this.router.navigate(['categorie']);
+      },
+      error: error => {
+        this.errorMsg = error.error.errors;
+      }
     });
   }
 }

@@ -14,8 +14,10 @@ export class StatistiquesComponent implements OnInit, AfterViewInit {
   mapLignesCommande = new Map();
   top5ArticlesMois: any[] = [];
   top5ArticlesTousLesMois: any[] = [];
+  private charts: { [key: string]: Chart } = {};
 
-  constructor(private cmdCltFrsService: CommandeService) { }
+
+  constructor(private readonly cmdCltFrsService: CommandeService) { }
 
   ngOnInit(): void {
     this.findAllCommandes();
@@ -79,7 +81,7 @@ export class StatistiquesComponent implements OnInit, AfterViewInit {
       const lignesCommande = this.mapLignesCommande.get(cmd.id);
       lignesCommande.forEach((ligne: LigneCommandeDto) => {
         const article = ligne.article;
-        const quantite = ligne.quantite || 0;
+        const quantite = ligne.quantite ?? 0;
 
         if (article) {
           if (!ventesParArticle.has(article.id)) {
@@ -98,7 +100,13 @@ export class StatistiquesComponent implements OnInit, AfterViewInit {
 
   renderChart(elementId: string, data: any[]): void {
     const ctx = document.getElementById(elementId) as HTMLCanvasElement;
-    new Chart(ctx, {
+  
+    // Vérifie s’il existe déjà un chart sur ce canvas → le détruire
+    if (this.charts[elementId]) {
+      this.charts[elementId].destroy();
+    }
+  
+    this.charts[elementId] = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: data.map(d => d.designation),
@@ -119,4 +127,5 @@ export class StatistiquesComponent implements OnInit, AfterViewInit {
       }
     });
   }
+  
 }

@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import {UserService} from '../user/user.service';
 import {CategoriesService} from '../../../gs-api/src/services/category-controller.service';
 import {CategoryDto} from '../../../gs-api/src/models/category-dto';
 import {Observable, of} from 'rxjs';
@@ -10,8 +9,7 @@ import {Observable, of} from 'rxjs';
 export class CategoryService {
 
   constructor(
-    private userService: UserService,
-    private categoryService: CategoriesService
+    private readonly categoryService: CategoriesService
   ) { }
 
   enregistrerCategory(categoryDto: CategoryDto): Observable<CategoryDto> {

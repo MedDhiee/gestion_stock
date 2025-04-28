@@ -14,8 +14,8 @@ export class LoginComponent {
   errorMessage = '';
 
   constructor(
-    private userService: UserService,
-    private router: Router
+    private readonly userService: UserService,
+    private readonly router: Router
   ) { }
 
 
@@ -26,13 +26,16 @@ export class LoginComponent {
   }
   // tslint:disable-next-line:typedef
   login() {
-    this.userService.login(this.authenticationRequest).subscribe((data) => {
-      console.log(data);
-      this.userService.setAccessToken(data);
-      this.getUserByEmail();
-      this.router.navigate(['/statistiques']);
-    }, error => {
-      this.errorMessage = 'Login et / ou mot de passe incorrecte';
+    this.userService.login(this.authenticationRequest).subscribe({
+      next: (data) => {
+        console.log(data);
+        this.userService.setAccessToken(data);
+        this.getUserByEmail();
+        this.router.navigate(['/statistiques']);
+      },
+      error: (error) => {
+        this.errorMessage = 'Login et / ou mot de passe incorrecte';
+      }
     });
   }
 

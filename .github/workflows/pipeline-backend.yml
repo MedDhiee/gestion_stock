@@ -111,11 +111,28 @@ jobs:
           file: Docker/backend/Dockerfile
           push: true
           platforms: linux/amd64
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/gestiondest ock-api:${{ steps.extract_version.outputs.VERSION }},${{ secrets.DOCKERHUB_USERNAME }}/gestiondestock-api:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/gestiondestock-backend:${{ steps.extract_version.outputs.VERSION }},${{ secrets.DOCKERHUB_USERNAME }}/gestiondestock-backend:latest
           build-args: |
             PROFILE=dev
             APP_VERSION=${{ steps.extract_version.outputs.VERSION }}
-  
+  scan-image:
+    name: Scan Docker Image with Trivy
+    runs-on: ubuntu-latest
+    needs: [build-image]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Trivy
+        uses: aquasecurity/trivy-action@v0.13.1
+        with:
+          scan-type: image
+          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/gestiondestock-backend:${{ steps.extract_version.outputs.VERSION }}
+          format: table
+          severity: CRITICAL,HIGH,MEDIUM
+
 
   ##deploy:
     #name: Deploy Backend

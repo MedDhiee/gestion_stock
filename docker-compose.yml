@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mysql:
     container_name: mysql-gestiondestock
@@ -35,6 +33,7 @@ services:
     networks:
       - gestiondestock-network
     restart: unless-stopped
+
   gestiondestock-ui:
     container_name: gestiondestock-ui
     image: gestiondestock-frontend
@@ -44,10 +43,38 @@ services:
       - gestiondestock-network
     restart: unless-stopped
 
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - gestiondestock-network
+    depends_on:
+      - gestiondestock-api
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - gestiondestock-network
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
 networks:
   gestiondestock-network:
     driver: bridge
 
 volumes:
   mysql_data:
+    driver: local
+  grafana-data:
     driver: local

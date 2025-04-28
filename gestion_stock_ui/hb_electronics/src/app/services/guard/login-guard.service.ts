@@ -8,8 +8,8 @@ import { UserService } from '../user/user.service';
 export class LoginGuardService implements CanActivate {
 
   constructor(
-    private userService: UserService,
-    private router: Router
+    private readonly userService: UserService,
+    private readonly router: Router
   ) { }
 
   canActivate(): boolean {

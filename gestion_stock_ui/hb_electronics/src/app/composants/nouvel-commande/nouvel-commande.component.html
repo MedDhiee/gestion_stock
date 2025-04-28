@@ -15,7 +15,7 @@
             <div *ngIf="codeArticle.length && !articleNotYetSelected" class="autocomplete shadow p-3 mb-5 bg-white rounded">
               <p class="p-1" *ngFor="let article of listArticle"
                  (click)="selectArticleClick(article)"
-              >
+                 (keydown)="onKeyDownHandler($event, article)">
                 {{ article.codeArticle }}&nbsp; {{ article.designation }}
               </p>
             </div>

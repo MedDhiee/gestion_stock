@@ -1,7 +1,7 @@
 <div class="col mb-3">
     <div class="col-md-12 mb-3 mt-3">
       <button (click)="fileInput.click()" style="background-color: transparent; border: none;">
-        <img [src]="imgUrl" class="rounded-circle" width="200px" height="200px" />
+        <img [src]="imgUrl" class="rounded-circle" width="200px" height="200px" alt="Article" />
         <input hidden type="file" #fileInput (change)="onFileInput(fileInput.files)">
       </button>
     </div>

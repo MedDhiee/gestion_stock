@@ -30,3 +30,21 @@ flickr:
   apiSecret: de016b82cf892963
   appKey: 72157720909135357-2b889b899a11e841
   appSecret: 4c2f916b29a40040
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+      enable:
+        process: true  
+  server:
+    port: 8081
+

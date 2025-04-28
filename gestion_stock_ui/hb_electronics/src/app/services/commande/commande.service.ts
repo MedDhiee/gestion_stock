@@ -9,10 +9,10 @@ import { environment } from 'src/environments/environment';
   providedIn: 'root'
 })
 export class CommandeService {
-  private backendUrl = 'http://localhost:8081/commandes';
+  private readonly backendUrl = 'http://localhost:8081/commandes';
   constructor(
-    private http:HttpClient,
-    private commandeClientService: CommandesclientsService
+    private readonly http:HttpClient,
+    private readonly commandeClientService: CommandesclientsService
   ) { }
   url = environment.apiUrl;
   enregistrerCommandeClient(commandeClient: CommandeDto): Observable<CommandeDto> {

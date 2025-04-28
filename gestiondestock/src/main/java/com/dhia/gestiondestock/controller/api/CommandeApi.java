@@ -3,9 +3,11 @@ package com.dhia.gestiondestock.controller.api;
 import com.dhia.gestiondestock.dto.CommandeDto;
 import com.dhia.gestiondestock.dto.LigneCommandeDto;
 import com.dhia.gestiondestock.model.EtatCommande;
-import io.swagger.annotations.Api;
+
 import java.math.BigDecimal;
 import java.util.List;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import static com.dhia.gestiondestock.utils.Constants.APP_ROOT;
 
-@Api("commandes")
+@Tag(name = "commandes", description = "Gestion des commandes")
 public interface CommandeApi {
 
 

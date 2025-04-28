@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import {UserService} from '../user/user.service';
 import {ArticlesService} from '../../../gs-api/src/services/article-controller.service';
 import {ArticleDto} from '../../../gs-api/src/models/article-dto';
 import {Observable, of} from 'rxjs';
@@ -9,11 +8,10 @@ import { HttpClient } from '@angular/common/http';
   providedIn: 'root'
 })
 export class ArticleService {
-  private backendUrl = 'http://localhost:8081';
+  private readonly backendUrl = 'http://localhost:8081';
   constructor(
-    private http:HttpClient,
-    private userService: UserService,
-    private articleService: ArticlesService
+    private readonly http:HttpClient,
+    private readonly articleService: ArticlesService
   ) { }
 
 

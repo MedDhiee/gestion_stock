@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { CommandeService } from 'src/app/services/commande/commande.service';
 import { LigneCommandeDto } from 'src/gs-api/src/models';
 
@@ -29,8 +28,7 @@ export class FactureComponent implements OnInit {
   beneficeFinal: number | null = null;
 
   constructor(
-    private router: Router,
-    private cmdCltFrsService: CommandeService,
+    private readonly cmdCltFrsService: CommandeService,
   ) { }
 
   ngOnInit(): void {
@@ -82,7 +80,7 @@ export class FactureComponent implements OnInit {
 
   calculerTotalCommande(id?: number): number {
     const total = this.mapPrixTotalCommande.get(id);
-    return total ? total : 0;
+    return total ?? 0;
   }
 
   organiserCommandesParDate() {
@@ -108,7 +106,7 @@ export class FactureComponent implements OnInit {
 
         // Calculer le total des prix d'achats pour chaque commande
         let totalPrixAchat = 0;
-        const lignesCommandes = this.mapLignesCommande.get(cmd.id) || [];
+        const lignesCommandes = this.mapLignesCommande.get(cmd.id) ?? [];
         lignesCommandes.forEach((ligne: LigneCommandeDto) => {
           if (ligne.article && ligne.article.prixAchat && ligne.quantite) {
             totalPrixAchat += +ligne.quantite * +ligne.article.prixAchat;
@@ -144,7 +142,7 @@ export class FactureComponent implements OnInit {
   // Calculer le bénéfice par mois
   calculerBeneficeParMois() {
     this.totalParMois.forEach((totalVente, cle) => {
-      const totalAchat = this.totalPrixAchatParMois.get(cle) || 0;
+      const totalAchat = this.totalPrixAchatParMois.get(cle) ?? 0;
       const benefice = totalVente - totalAchat;
       this.beneficeParMois.set(cle, benefice);
     });
@@ -158,9 +156,9 @@ export class FactureComponent implements OnInit {
   rechercherParMoisEtAnnee() {
     if (this.moisSelectionne !== null && this.anneeSelectionnee !== null) {
       const cle = `${this.moisSelectionne}-${this.anneeSelectionnee}`;
-      this.totalPrixVenteSelectionne = this.totalParMois.get(cle) || null;
-      this.totalPrixAchatSelectionne = this.totalPrixAchatParMois.get(cle) || null;
-      this.beneficeSelectionne = this.beneficeParMois.get(cle) || null;
+      this.totalPrixVenteSelectionne = this.totalParMois.get(cle) ?? null;
+      this.totalPrixAchatSelectionne = this.totalPrixAchatParMois.get(cle) ?? null;
+      this.beneficeSelectionne = this.beneficeParMois.get(cle) ?? null;
     } else {
       this.totalPrixVenteSelectionne = null;
       this.totalPrixAchatSelectionne = null;

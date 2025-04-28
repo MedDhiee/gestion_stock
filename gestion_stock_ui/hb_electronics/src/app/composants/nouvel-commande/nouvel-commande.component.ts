@@ -4,7 +4,7 @@ import { ArticleService } from 'src/app/services/article/article.service';
 import { CommandeService } from 'src/app/services/commande/commande.service';
 import { ArticleDto, CommandeDto, LigneCommandeDto } from 'src/gs-api/src/models';
 
-declare var window: any;
+declare let window: any;
 
 @Component({
   selector: 'app-nouvel-commande',
@@ -25,9 +25,9 @@ export class NouvelCommandeComponent implements OnInit {
   errorMsg: Array<string> = [];
 
   constructor(
-    private router: Router,
-    private articleService: ArticleService,
-    private cmdCltFrsService: CommandeService
+    private readonly router: Router,
+    private readonly articleService: ArticleService,
+    private readonly cmdCltFrsService: CommandeService
   ) { }
 
   ngOnInit(): void {
@@ -74,7 +74,7 @@ export class NouvelCommandeComponent implements OnInit {
   }
 
   private checkStockQuantity(): boolean {
-    const inStock = this.searchedArticle.in_stock || 0;
+    const inStock = this.searchedArticle.in_stock ?? 0;
     const quantityToOrder = +this.quantite;
 
     if (quantityToOrder > inStock) {
@@ -90,7 +90,7 @@ export class NouvelCommandeComponent implements OnInit {
     if (ligneCmdAlreadyExists) {
       this.lignesCommande.forEach(lig => {
         if (lig && lig.article?.codeArticle === this.searchedArticle.codeArticle) {
-          lig.quantite = (lig.quantite || 0) + +this.quantite;
+          lig.quantite = (lig.quantite ?? 0) + +this.quantite;
         }
       });
     } else {
@@ -105,22 +105,25 @@ export class NouvelCommandeComponent implements OnInit {
 
   selectArticleClick(article: ArticleDto): void {
     this.searchedArticle = article;
-    this.codeArticle = article.codeArticle ? article.codeArticle : '';
+    this.codeArticle = article.codeArticle ?? '';
     this.articleNotYetSelected = true;
   }
 
   enregistrerCommande(): void {
     const commande = this.preparerCommande();
-    this.cmdCltFrsService.enregistrerCommandeClient(commande as CommandeDto).subscribe(cmd => {
-      console.log('Commande enregistrée:', cmd); // Ajoutez ce log pour vérifier la réponse
-      this.commandeId = cmd.id;
-      console.log(cmd.id);
+    this.cmdCltFrsService.enregistrerCommandeClient(commande as CommandeDto).subscribe({
+      next: (cmd) => {
+        console.log('Commande enregistrée:', cmd); // Ajoutez ce log pour vérifier la réponse
+        this.commandeId = cmd.id;
+        console.log(cmd.id);
 
-      // Update the quantities of the articles
-      this.updateArticleQuantities();
-      this.router.navigate(['commandesclient']);
-    }, error => {
-      this.errorMsg = error.error.errors;
+        // Update the quantities of the articles
+        this.updateArticleQuantities();
+        this.router.navigate(['commandesclient']);
+      },
+      error: (error) => {
+        this.errorMsg = error.error.errors;
+      }
     });
   }
 
@@ -174,12 +177,21 @@ export class NouvelCommandeComponent implements OnInit {
     this.lignesCommande.forEach(ligne => {
       if (ligne.article?.id && ligne.quantite) {
         const newStock = ligne.article.in_stock ? ligne.article.in_stock - ligne.quantite : -ligne.quantite;
-        this.articleService.updateArticle(ligne.article.id, newStock).subscribe(response => {
-          console.log('Article updated:', response);
-        }, error => {
-          console.error('Error updating article:', error);
+        this.articleService.updateArticle(ligne.article.id, newStock).subscribe({
+          next: (response) => {
+            console.log('Article updated:', response);
+          },
+          error: (error) => {
+            console.error('Error updating article:', error);
+          }
         });
       }
     });
+  }
+  onKeyDownHandler(event: KeyboardEvent, article: any): void {
+    // Add your logic here, for example:
+    if (event.key === 'Enter') {
+      this.selectArticleClick(article);
+    }
   }
 }

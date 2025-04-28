@@ -1,9 +1,10 @@
 package com.dhia.gestiondestock.controller.api;
 
 import com.dhia.gestiondestock.dto.MvtStkDto;
-import io.swagger.annotations.Api;
 import java.math.BigDecimal;
 import java.util.List;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import static com.dhia.gestiondestock.utils.Constants.APP_ROOT;
 
-@Api("mvtstk")
+@Tag(name = "mvtstk", description = "Gestion des mvtstk")
 public interface MvtStkApi {
 
     @GetMapping(APP_ROOT + "/mvtstk/stockreel/{idArticle}")

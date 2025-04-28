@@ -47,7 +47,7 @@ export class MenuComponent {
   ];
 private lastSelectedMenu:Menu|undefined;
   constructor(
-    private router:Router,
+    private readonly router:Router,
   ){}
   navigate(menu:Menu){
     if(this.lastSelectedMenu){

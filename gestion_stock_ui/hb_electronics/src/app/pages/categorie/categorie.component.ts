@@ -15,8 +15,8 @@ export class CategorieComponent implements OnInit {
   errorMsgs = '';
 
   constructor(
-    private router: Router,
-    private categoryService: CategoryService
+    private readonly router: Router,
+    private readonly categoryService: CategoryService
   ) { }
 
   ngOnInit(): void {
@@ -41,10 +41,13 @@ export class CategorieComponent implements OnInit {
   confirmerEtSupprimerCat(): void {
     if (this.selectedCatIdToDelete !== -1) {
       this.categoryService.delete(this.selectedCatIdToDelete)
-      .subscribe(res => {
-        this.findAllCategories();
-      }, error => {
-        this.errorMsgs = error.error.message;
+      .subscribe({
+        next: res => {
+          this.findAllCategories();
+        },
+        error: error => {
+          this.errorMsgs = error.error.message;
+        }
       });
     }
   }

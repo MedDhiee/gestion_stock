@@ -17,9 +17,10 @@ export class CommandeComponent implements OnInit {
   searchDate: string = '';
 
   constructor(
-    private router: Router,
-    private cmdCltFrsService: CommandeService,
-    private cdr: ChangeDetectorRef
+    private readonly cdRef: ChangeDetectorRef,
+    private readonly router: Router,
+    private readonly cmdCltFrsService: CommandeService,
+    private readonly cdr: ChangeDetectorRef
   ) { }
   @Input()
   commandeDto: CommandeDto = {};
@@ -33,7 +34,9 @@ export class CommandeComponent implements OnInit {
   ngOnInit(): void {
     this.findAllCommandes();
   }
-
+  ngAfterViewInit(): void {
+    this.cdRef.detectChanges(); // force une vérification après initialisation
+  }
   findAllCommandes(): void {
     this.cmdCltFrsService.findAllCommandesClient()
       .subscribe(cmd => {
@@ -84,19 +87,25 @@ export class CommandeComponent implements OnInit {
 
   calculerTotalCommande(id?: number): number {
     const total = this.mapPrixTotalCommande.get(id);
-    return total ? total : 0;
+    return total ?? 0;
   }
 
-  organiserCommandesParDate() {
-    this.commandesParDate.clear();
-    this.listeCommandes.forEach(cmd => {
-      const date = new Date(cmd.dateCommande).toISOString().split('T')[0]; // Format date pour comparaison
-      if (!this.commandesParDate.has(date)) {
-        this.commandesParDate.set(date, []);
-      }
-      this.commandesParDate.get(date)?.push(cmd);
-    });
+  commandesParDateArray: string[] = [];
+
+organiserCommandesParDate() {
+  this.commandesParDate.clear();
+  for (const commande of this.listeCommandes) {
+    const date = commande.dateCommande.split('T')[0];
+    if (!this.commandesParDate.has(date)) {
+      this.commandesParDate.set(date, []);
+    }
+    this.commandesParDate.get(date)?.push(commande);
   }
+
+  // ✅ Convert to array once for template usage
+  this.commandesParDateArray = Array.from(this.commandesParDate.keys());
+}
+
 
   calculerTotalParDate() {
     this.totalParDate.clear();
@@ -126,28 +135,31 @@ export class CommandeComponent implements OnInit {
   }
 
   exportPdf(commandeId: number): void {
-    this.cmdCltFrsService.exportPdf(commandeId).subscribe((x) => {
-      const blob = new Blob([x], { type: 'application/pdf' });
-      const data = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = data;
-      link.target = '_blank';
-      link.download = 'facture'+commandeId+'.pdf';
+    this.cmdCltFrsService.exportPdf(commandeId).subscribe({
+      next: (x) => {
+        const blob = new Blob([x], { type: 'application/pdf' });
+        const data = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = data;
+        link.target = '_blank';
+        link.download = 'facture'+commandeId+'.pdf';
 
-      link.dispatchEvent(
-        new MouseEvent('click', {
-          bubbles: true,
-          cancelable: true,
-          view: window,
-        })
-      );
+        link.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+          })
+        );
 
-      setTimeout(() => {
-        window.URL.revokeObjectURL(data);
-        link.remove();
-      }, 100);
-    }, (error) => {
-      console.error('Error exporting PDF:', error);
+        setTimeout(() => {
+          window.URL.revokeObjectURL(data);
+          link.remove();
+        }, 100);
+      },
+      error: (error) => {
+        console.error('Error exporting PDF:', error);
+      }
     });
   }
 
@@ -161,11 +173,14 @@ export class CommandeComponent implements OnInit {
     return sortedMap;
   }
   deleteCommande(id: number): void {
-    this.cmdCltFrsService.deleteCommande(id).subscribe(() => {
-      console.log('Commande supprimée');
-      window.location.reload();
-    }, (error) => {
-      console.error('Erreur lors de la suppression de la commande :', error);
+    this.cmdCltFrsService.deleteCommande(id).subscribe({
+      next: () => {
+        console.log('Commande supprimée');
+        window.location.reload();
+      },
+      error: (error) => {
+        console.error('Erreur lors de la suppression de la commande :', error);
+      }
     });
   }
 

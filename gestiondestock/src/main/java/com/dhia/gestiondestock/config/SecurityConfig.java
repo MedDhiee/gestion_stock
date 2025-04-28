@@ -45,6 +45,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebM
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable()
                 .authorizeRequests().antMatchers(
+                        "/actuator/prometheus",
                         "/v2/api-docs",
                         "/gestiondestock/v1/auth/authenticate/**",
                         "/swagger-ui.html#/**/**",
@@ -74,7 +75,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebM
         config.setAllowCredentials(true);
         // Don't do this in production, use a proper list  of allowed origins
         config.setAllowedOrigins(allowedOrigin);
-        config.setAllowedHeaders(Arrays.asList("*"));
+        config.setAllowedHeaders(Arrays.asList("http://localhost:8080"));
         config.setAllowedMethods(Arrays.asList("*"));
         source.registerCorsConfiguration("/**", config);
         // some comment here

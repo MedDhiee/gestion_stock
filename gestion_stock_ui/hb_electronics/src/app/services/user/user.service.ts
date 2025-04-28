@@ -14,9 +14,9 @@ import { jwtDecode } from "jwt-decode";
 export class UserService {
 
   constructor(
-    private authenticationService: AuthenticationService,
-    private utilisateurService: UtilisateursService,
-    private router: Router
+    private readonly authenticationService: AuthenticationService,
+    private readonly utilisateurService: UtilisateursService,
+    private readonly router: Router
   ) { }
 
   login(authenticationRequest: AuthenticationRequest): Observable<AuthenticationResponse> {
@@ -78,6 +78,7 @@ export class UserService {
     try {
       return jwtDecode(token);
     } catch (error) {
+      console.error('Error decoding token:', error);
       this.logout();
       return null;
     }
