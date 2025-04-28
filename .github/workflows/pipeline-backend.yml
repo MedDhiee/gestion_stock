@@ -126,7 +126,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install Trivy
-        uses: aquasecurity/trivy-action@v0.13.1
+        uses: aquasecurity/trivy-action@v0.11.2
         with:
           scan-type: image
           image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/gestiondestock-backend:${{ steps.extract_version.outputs.VERSION }}
