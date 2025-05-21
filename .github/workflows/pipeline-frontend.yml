@@ -62,6 +62,13 @@ jobs:
           sudo mv sonar-scanner-5.0.1.3006-linux /opt/sonar-scanner
           sudo ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner
 
+      - name: Cache SonarQube packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      
       - name: SonarQube Scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -71,6 +78,7 @@ jobs:
             -Dsonar.projectKey=frontend \
             -Dsonar.projectName=frontend \
             -Dsonar.sources=src \
+            -Dsonar.exclusions=**/*.spec.ts,**/node_modules/**,**/coverage/**,**/dist/** \
             -Dsonar.javascript.lcov.reportPaths=coverage/hb_electronics/lcov.info \
             -Dsonar.host.url=https://gestionstock-sonarqube.onrender.com \
             -Dsonar.login=$SONAR_TOKEN
