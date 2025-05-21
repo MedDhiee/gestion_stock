@@ -70,15 +70,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebM
 
     @Bean
     public CorsFilter corsFilter() {
-        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        final CorsConfiguration config = new CorsConfiguration();
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        // Don't do this in production, use a proper list  of allowed origins
-        config.setAllowedOrigins(allowedOrigin);
-        config.setAllowedHeaders(Arrays.asList("http://localhost:8080"));
-        config.setAllowedMethods(Arrays.asList("*"));
+        config.setAllowedOriginPatterns(Arrays.asList("http://localhost:4200")); // Autorise Angular
+        config.setAllowedHeaders(Arrays.asList("*")); // Autorise tous les headers
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Autorise les méthodes
         source.registerCorsConfiguration("/**", config);
-        // some comment here
         return new CorsFilter(source);
     }
 

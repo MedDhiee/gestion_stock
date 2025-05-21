@@ -39,7 +39,9 @@ jobs:
           file: Docker/frontend/Dockerfile
           push: true
           platforms: linux/amd64
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/gestiondestock-ui:latest,${{ secrets.DOCKERHUB_USERNAME }}/gestiondestock-ui:${{ steps.extract_version.outputs.VERSION }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/gestiondestock-ui:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/gestiondestock-ui:${{ steps.extract_version.outputs.VERSION }}
 
   sonarqube-analysis:
     name: SonarQube Frontend Analysis
@@ -71,8 +73,9 @@ jobs:
             -Dsonar.sources=src \
             -Dsonar.javascript.lcov.reportPaths=coverage/hb_electronics/lcov.info \
             -Dsonar.host.url=https://gestionstock-sonarqube.onrender.com \
-            -Dsonar.login=$SONAR_TOKEN \
+            -Dsonar.login=$SONAR_TOKEN
 
+#Intégrer SonarQube dans un pipeline frontend, c’est comme mettre un contrôle technique automatique sur ton code à chaque push. Ça te protège contre les erreurs subtiles, améliore la lisibilité, et augmente la fiabilité de ton application.
   #deploy:
    # name: Deploy Frontend
   #  runs-on: ubuntu-latest
