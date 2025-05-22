@@ -84,7 +84,10 @@ jobs:
               exit 1
             fi
             echo "✅ Coverage report found with $(wc -l < coverage/hb_electronics/lcov.info) lines"
-
+        
+        - name: Wake up SonarQube (Render)
+          run: curl --silent https://gestionstock-sonarqube.onrender.com > /dev/null || true
+      
         - name: SonarQube Scan
           env:
             SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
