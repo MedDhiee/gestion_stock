@@ -66,9 +66,19 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-      
+          key: ${{ runner.os }}-sonar-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-sonar
+
+      - name: Check coverage file presence
+        run: |
+          cd gestion_stock_ui/hb_electronics
+          if [ ! -f coverage/hb_electronics/lcov.info ]; then
+            echo "❌ Coverage report not found!"
+            exit 1
+          fi
+          echo "✅ Coverage report found with $(wc -l < coverage/hb_electronics/lcov.info) lines"
+
       - name: SonarQube Scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -78,10 +88,12 @@ jobs:
             -Dsonar.projectKey=frontend \
             -Dsonar.projectName=frontend \
             -Dsonar.sources=src \
-            -Dsonar.exclusions=**/*.spec.ts,**/node_modules/**,**/coverage/**,**/dist/** \
+            -Dsonar.exclusions=src/**/*.spec.ts,**/node_modules/**,**/coverage/**,**/dist/** \
             -Dsonar.javascript.lcov.reportPaths=coverage/hb_electronics/lcov.info \
             -Dsonar.host.url=https://gestionstock-sonarqube.onrender.com \
-            -Dsonar.login=$SONAR_TOKEN
+            -Dsonar.login=$SONAR_TOKEN \
+            -Dsonar.verbose=true  
+
 
 #Intégrer SonarQube dans un pipeline frontend, c’est comme mettre un contrôle technique automatique sur ton code à chaque push. Ça te protège contre les erreurs subtiles, améliore la lisibilité, et augmente la fiabilité de ton application.
   #deploy:
