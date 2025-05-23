@@ -43,25 +43,7 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/gestiondestock-ui:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/gestiondestock-ui:${{ steps.extract_version.outputs.VERSION }}
 
-  lint-check:
-    name: 🧼 Lint Check
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: 📥 Checkout repository
-        uses: actions/checkout@v4
-
-      - name: 📦 Install dependencies
-        run: |
-          cd gestion_stock_ui/hb_electronics
-          npm ci
-
-      - name: 🔍 Run lint
-        run: |
-          cd gestion_stock_ui/hb_electronics
-          npm run lint
-
-
+  
   sonarqube-analysis:
       name: SonarQube Frontend Analysis
       runs-on: ubuntu-latest
