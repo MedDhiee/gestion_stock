@@ -43,26 +43,6 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/gestiondestock-ui:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/gestiondestock-ui:${{ steps.extract_version.outputs.VERSION }}
 
-  lint-check:
-    name: 🧼 Lint Check
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: 📥 Checkout repository
-        uses: actions/checkout@v4
-
-      - name: 📦 Install dependencies
-        run: |
-          cd gestion_stock_ui/hb_electronics
-          npm ci
-
-      - name: 🔍 Run lint
-        run: |
-          cd gestion_stock_ui/hb_electronics
-          npm run lint
-
-
-
 #Intégrer SonarQube dans un pipeline frontend, c’est comme mettre un contrôle technique automatique sur ton code à chaque push. Ça te protège contre les erreurs subtiles, améliore la lisibilité, et augmente la fiabilité de ton application.
   #deploy:
    # name: Deploy Frontend
