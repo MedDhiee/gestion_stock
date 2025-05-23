@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ArticleService } from 'src/app/services/article/article.service';
 import { ArticleDto } from 'src/gs-api/src/models';
@@ -8,7 +8,7 @@ import { ArticleDto } from 'src/gs-api/src/models';
   templateUrl: './detail-article.component.html',
   styleUrls: ['./detail-article.component.scss']
 })
-export class DetailArticleComponent {
+export class DetailArticleComponent implements OnInit {
   @Input()
   articleDto: ArticleDto = {};
   @Output()

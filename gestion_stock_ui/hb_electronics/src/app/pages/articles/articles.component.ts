@@ -10,7 +10,7 @@ import {ArticleService} from '../../services/article/article.service';
 })
 export class ArticlesComponent implements OnInit {
 
-  listArticle: Array<ArticleDto> = [];
+  listArticle: ArticleDto[] = [];
   errorMsg = '';
 
   constructor(

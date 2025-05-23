@@ -1,4 +1,3 @@
-/* tslint:disable */
 import { ArticleDto } from './article-dto';
 export interface MvtStkDto {
   article?: ArticleDto;

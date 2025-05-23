@@ -1,4 +1,3 @@
-/* tslint:disable */
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpRequest, HttpResponse, HttpHeaders } from '@angular/common/http';
 import { BaseService as __BaseService } from '../base-service';
@@ -27,11 +26,11 @@ class AuthenticationService extends __BaseService {
    * @return successful operation
    */
   authenticateResponse(body?: AuthenticationRequest): __Observable<__StrictHttpResponse<AuthenticationResponse>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
     let __body: any = null;
     __body = body;
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'POST',
       this.rootUrl + `/gestiondestock/v1/auth/authenticate`,
       __body,
@@ -59,7 +58,7 @@ class AuthenticationService extends __BaseService {
   }
 }
 
-module AuthenticationService {
+namespace AuthenticationService {
 }
 
 export { AuthenticationService }

@@ -8,7 +8,7 @@ import { Router } from '@angular/router';
   styleUrls: ['./menu.component.scss']
 })
 export class MenuComponent {
-  public menuProperties: Array<Menu> = [
+  public menuProperties: Menu[] = [
     {
       id:'1',
       titre:'Tableau de bord',

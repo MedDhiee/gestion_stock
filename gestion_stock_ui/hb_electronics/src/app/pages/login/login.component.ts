@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { UserService } from 'src/app/services/user/user.service';
 import { AuthenticationRequest } from 'src/gs-api/src/models';
@@ -8,7 +8,7 @@ import { AuthenticationRequest } from 'src/gs-api/src/models';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   
   authenticationRequest: AuthenticationRequest = {};
   errorMessage = '';
@@ -24,8 +24,7 @@ export class LoginComponent {
       this.userService.logout();
     
   }
-  // tslint:disable-next-line:typedef
-  login() {
+   login() {
     this.userService.login(this.authenticationRequest).subscribe({
       next: (data) => {
         console.log(data);

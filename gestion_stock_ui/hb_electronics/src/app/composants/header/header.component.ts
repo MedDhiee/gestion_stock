@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { UserService } from 'src/app/services/user/user.service';
 import { UtilisateurDto } from 'src/gs-api/src/models';
 
@@ -7,7 +7,7 @@ import { UtilisateurDto } from 'src/gs-api/src/models';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
   connectedUser: UtilisateurDto = {};
 
   constructor(

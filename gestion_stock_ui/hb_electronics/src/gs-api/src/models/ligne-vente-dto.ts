@@ -1,4 +1,3 @@
-/* tslint:disable */
 import { ArticleDto } from './article-dto';
 import { VentesDto } from './ventes-dto';
 export interface LigneVenteDto {

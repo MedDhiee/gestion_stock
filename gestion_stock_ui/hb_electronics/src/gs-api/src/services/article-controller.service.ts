@@ -34,11 +34,11 @@ class ArticlesService extends __BaseService {
    * Cette methode permet de chercher et renvoyer la liste des articles qui existent dans la BDD
    * @return La liste des article / Une liste vide
    */
-  findAllResponse(): __Observable<__StrictHttpResponse<Array<ArticleDto>>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
-    let __body: any = null;
-    let req = new HttpRequest<any>(
+  findAllResponse(): __Observable<__StrictHttpResponse<ArticleDto[]>> {
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
+    const __body: any = null;
+    const req = new HttpRequest<any>(
       'GET',
       this.rootUrl + `/gestiondestock/v1/articles/all`,
       __body,
@@ -51,7 +51,7 @@ class ArticlesService extends __BaseService {
     return this.http.request<any>(req).pipe(
       __filter(_r => _r instanceof HttpResponse),
       __map((_r) => {
-        return _r as __StrictHttpResponse<Array<ArticleDto>>;
+        return _r as __StrictHttpResponse<ArticleDto[]>;
       })
     );
   }
@@ -59,9 +59,9 @@ class ArticlesService extends __BaseService {
    * Cette methode permet de chercher et renvoyer la liste des articles qui existent dans la BDD
    * @return La liste des article / Une liste vide
    */
-  findAll(): __Observable<Array<ArticleDto>> {
+  findAll(): __Observable<ArticleDto[]> {
     return this.findAllResponse().pipe(
-      __map(_r => _r.body as Array<ArticleDto>)
+      __map(_r => _r.body as ArticleDto[])
     );
   }
 
@@ -71,11 +71,11 @@ class ArticlesService extends __BaseService {
    * @return L'objet article cree / modifie
    */
   saveResponse(body?: ArticleDto): __Observable<__StrictHttpResponse<ArticleDto>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
     let __body: any = null;
     __body = body;
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'POST',
       this.rootUrl + `/gestiondestock/v1/articles/create`,
       __body,
@@ -108,11 +108,11 @@ class ArticlesService extends __BaseService {
    * @param idArticle undefined
    */
   deleteResponse(idArticle: number): __Observable<__StrictHttpResponse<null>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
-    let __body: any = null;
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
+    const __body: any = null;
 
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'DELETE',
       this.rootUrl + `/gestiondestock/v1/articles/delete/${idArticle}`,
       __body,
@@ -143,12 +143,12 @@ class ArticlesService extends __BaseService {
    * @param idCategory undefined
    * @return successful operation
    */
-  findAllArticleByIdCategoryResponse(idCategory: number): __Observable<__StrictHttpResponse<Array<ArticleDto>>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
-    let __body: any = null;
+  findAllArticleByIdCategoryResponse(idCategory: number): __Observable<__StrictHttpResponse<ArticleDto[]>> {
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
+    const __body: any = null;
 
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'GET',
       this.rootUrl + `/gestiondestock/v1/articles/filter/category/${idCategory}`,
       __body,
@@ -161,7 +161,7 @@ class ArticlesService extends __BaseService {
     return this.http.request<any>(req).pipe(
       __filter(_r => _r instanceof HttpResponse),
       __map((_r) => {
-        return _r as __StrictHttpResponse<Array<ArticleDto>>;
+        return _r as __StrictHttpResponse<ArticleDto[]>;
       })
     );
   }
@@ -169,9 +169,9 @@ class ArticlesService extends __BaseService {
    * @param idCategory undefined
    * @return successful operation
    */
-  findAllArticleByIdCategory(idCategory: number): __Observable<Array<ArticleDto>> {
+  findAllArticleByIdCategory(idCategory: number): __Observable<ArticleDto[]> {
     return this.findAllArticleByIdCategoryResponse(idCategory).pipe(
-      __map(_r => _r.body as Array<ArticleDto>)
+      __map(_r => _r.body as ArticleDto[])
     );
   }
 
@@ -181,11 +181,11 @@ class ArticlesService extends __BaseService {
    * @return L'article a ete trouve dans la BDD
    */
   findByCodeArticleResponse(codeArticle: string): __Observable<__StrictHttpResponse<ArticleDto>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
-    let __body: any = null;
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
+    const __body: any = null;
 
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'GET',
       this.rootUrl + `/gestiondestock/v1/articles/filter/${codeArticle}`,
       __body,
@@ -217,12 +217,12 @@ class ArticlesService extends __BaseService {
    * @param idArticle undefined
    * @return successful operation
    */
-  findHistoriaueCommandeClientResponse(idArticle: number): __Observable<__StrictHttpResponse<Array<LigneCommandeDto>>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
-    let __body: any = null;
+  findHistoriaueCommandeClientResponse(idArticle: number): __Observable<__StrictHttpResponse<LigneCommandeDto[]>> {
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
+    const __body: any = null;
 
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'GET',
       this.rootUrl + `/gestiondestock/v1/articles/historique/commandeclient/${idArticle}`,
       __body,
@@ -235,7 +235,7 @@ class ArticlesService extends __BaseService {
     return this.http.request<any>(req).pipe(
       __filter(_r => _r instanceof HttpResponse),
       __map((_r) => {
-        return _r as __StrictHttpResponse<Array<LigneCommandeDto>>;
+        return _r as __StrictHttpResponse<LigneCommandeDto[]>;
       })
     );
   }
@@ -243,9 +243,9 @@ class ArticlesService extends __BaseService {
    * @param idArticle undefined
    * @return successful operation
    */
-  findHistoriaueCommandeClient(idArticle: number): __Observable<Array<LigneCommandeDto>> {
+  findHistoriaueCommandeClient(idArticle: number): __Observable<LigneCommandeDto[]> {
     return this.findHistoriaueCommandeClientResponse(idArticle).pipe(
-      __map(_r => _r.body as Array<LigneCommandeDto>)
+      __map(_r => _r.body as LigneCommandeDto[])
     );
   }
 
@@ -253,12 +253,12 @@ class ArticlesService extends __BaseService {
    * @param idArticle undefined
    * @return successful operation
    */
-  findHistoriqueVentesResponse(idArticle: number): __Observable<__StrictHttpResponse<Array<LigneVenteDto>>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
-    let __body: any = null;
+  findHistoriqueVentesResponse(idArticle: number): __Observable<__StrictHttpResponse<LigneVenteDto[]>> {
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
+    const __body: any = null;
 
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'GET',
       this.rootUrl + `/gestiondestock/v1/articles/historique/vente/${idArticle}`,
       __body,
@@ -271,7 +271,7 @@ class ArticlesService extends __BaseService {
     return this.http.request<any>(req).pipe(
       __filter(_r => _r instanceof HttpResponse),
       __map((_r) => {
-        return _r as __StrictHttpResponse<Array<LigneVenteDto>>;
+        return _r as __StrictHttpResponse<LigneVenteDto[]>;
       })
     );
   }
@@ -279,9 +279,9 @@ class ArticlesService extends __BaseService {
    * @param idArticle undefined
    * @return successful operation
    */
-  findHistoriqueVentes(idArticle: number): __Observable<Array<LigneVenteDto>> {
+  findHistoriqueVentes(idArticle: number): __Observable<LigneVenteDto[]> {
     return this.findHistoriqueVentesResponse(idArticle).pipe(
-      __map(_r => _r.body as Array<LigneVenteDto>)
+      __map(_r => _r.body as LigneVenteDto[])
     );
   }
 
@@ -291,11 +291,11 @@ class ArticlesService extends __BaseService {
    * @return L'article a ete trouve dans la BDD
    */
   findByIdResponse(idArticle: number): __Observable<__StrictHttpResponse<ArticleDto>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
-    let __body: any = null;
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
+    const __body: any = null;
 
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'GET',
       this.rootUrl + `/gestiondestock/v1/articles/${idArticle}`,
       __body,
@@ -324,7 +324,7 @@ class ArticlesService extends __BaseService {
   }
 }
 
-module ArticlesService {
+namespace ArticlesService {
 }
 
 export { ArticlesService }

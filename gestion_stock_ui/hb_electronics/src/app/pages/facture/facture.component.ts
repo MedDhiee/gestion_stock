@@ -9,10 +9,10 @@ import { LigneCommandeDto } from 'src/gs-api/src/models';
 })
 export class FactureComponent implements OnInit {
 
-  listeCommandes: Array<any> = [];
+  listeCommandes: any[] = [];
   mapLignesCommande = new Map();
   mapPrixTotalCommande = new Map();
-  commandesParDate: Map<string, any[]> = new Map();
+  commandesParDate = new Map<string, any[]>();
   totalParMois: Map<string, number> = new Map<string, number>();
   totalPrixAchatParMois: Map<string, number> = new Map<string, number>();
   beneficeParMois: Map<string, number> = new Map<string, number>();
@@ -68,7 +68,7 @@ export class FactureComponent implements OnInit {
       });
   }
 
-  calculerTatalCmd(list: Array<LigneCommandeDto>): number {
+  calculerTatalCmd(list: LigneCommandeDto[]): number {
     let total = 0;
     list.forEach(ligne => {
       if (ligne.prixVente && ligne.quantite) {

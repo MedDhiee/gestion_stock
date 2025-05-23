@@ -1,4 +1,3 @@
-/* tslint:disable */
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpRequest, HttpResponse, HttpHeaders } from '@angular/common/http';
 import { BaseService as __BaseService } from '../base-service';
@@ -34,16 +33,16 @@ class PhotosService extends __BaseService {
    * @return successful operation
    */
   savePhotoResponse(params: PhotosService.SavePhotoParams): __Observable<__StrictHttpResponse<{}>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
     let __body: any = null;
-    let __formData = new FormData();
+    const __formData = new FormData();
     __body = __formData;
 
 
     if (params.file != null) { __formData.append('file', params.file as string | Blob);}
 
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'POST',
       this.rootUrl + `/gestiondestock/v1/save/${params.id}/${params.title}/${params.context}`,
       __body,
@@ -80,7 +79,7 @@ class PhotosService extends __BaseService {
   }
 }
 
-module PhotosService {
+namespace PhotosService {
 
   /**
    * Parameters for savePhoto

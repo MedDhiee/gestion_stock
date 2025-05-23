@@ -1,4 +1,3 @@
-/* tslint:disable */
 import { CategoryDto } from './category-dto';
 export interface ArticleDto {
   budget_total?: number;

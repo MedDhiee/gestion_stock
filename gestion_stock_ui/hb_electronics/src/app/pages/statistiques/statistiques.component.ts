@@ -10,11 +10,11 @@ import { Chart } from 'chart.js/auto';
 })
 export class StatistiquesComponent implements OnInit, AfterViewInit {
 
-  listeCommandes: Array<any> = [];
+  listeCommandes: any[] = [];
   mapLignesCommande = new Map();
   top5ArticlesMois: any[] = [];
   top5ArticlesTousLesMois: any[] = [];
-  private charts: { [key: string]: Chart } = {};
+  private charts: Record<string, Chart> = {};
 
 
   constructor(private readonly cmdCltFrsService: CommandeService) { }
@@ -64,7 +64,7 @@ export class StatistiquesComponent implements OnInit, AfterViewInit {
       });
   }
 
-  commandesMoisCourant(): Array<any> {
+  commandesMoisCourant(): any[] {
     const dateActuelle = new Date();
     const moisCourant = dateActuelle.getMonth();
     const anneeCourante = dateActuelle.getFullYear();
@@ -74,7 +74,7 @@ export class StatistiquesComponent implements OnInit, AfterViewInit {
     });
   }
 
-  calculerTop5Articles(commandes: Array<any>): any[] {
+  calculerTop5Articles(commandes: any[]): any[] {
     const ventesParArticle = new Map();
 
     commandes.forEach(cmd => {

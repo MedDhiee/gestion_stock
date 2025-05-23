@@ -1,4 +1,3 @@
-/* tslint:disable */
 import { HttpClient, HttpParameterCodec, HttpParams } from '@angular/common/http';
 import { ApiConfiguration } from './api-configuration';
 
@@ -35,7 +34,7 @@ export class BaseService {
   ) {
   }
 
-  private _rootUrl: string = '';
+  private _rootUrl = '';
 
   /**
    * Returns the root url for API operations. If not set directly in this

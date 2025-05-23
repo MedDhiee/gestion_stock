@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, Output, EventEmitter, Input } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, Output, EventEmitter, Input, AfterViewInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommandeService } from 'src/app/services/commande/commande.service';
 import { CommandeDto, LigneCommandeDto } from 'src/gs-api/src/models';
@@ -7,14 +7,14 @@ import { CommandeDto, LigneCommandeDto } from 'src/gs-api/src/models';
   templateUrl: './commande.component.html',
   styleUrls: ['./commande.component.scss']
 })
-export class CommandeComponent implements OnInit {
+export class CommandeComponent implements OnInit, AfterViewInit {
 
-  listeCommandes: Array<any> = [];
+  listeCommandes: any[] = [];
   mapLignesCommande = new Map();
   mapPrixTotalCommande = new Map();
-  commandesParDate: Map<string, any[]> = new Map();
+  commandesParDate = new Map<string, any[]>();
   totalParDate: Map<string, number> = new Map<string, number>();
-  searchDate: string = '';
+  searchDate = '';
 
   constructor(
     private readonly cdRef: ChangeDetectorRef,
@@ -75,7 +75,7 @@ export class CommandeComponent implements OnInit {
       });
   }
 
-  calculerTatalCmd(list: Array<LigneCommandeDto>): number {
+  calculerTatalCmd(list: LigneCommandeDto[]): number {
     let total = 0;
     list.forEach(ligne => {
       if (ligne.prixVente && ligne.quantite) {

@@ -1,4 +1,3 @@
-/* tslint:disable */
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpRequest, HttpResponse, HttpHeaders } from '@angular/common/http';
 import { BaseService as __BaseService } from '../base-service';
@@ -35,11 +34,11 @@ class MvtStkControllerService extends __BaseService {
    * @return OK
    */
   correctionStockNegUsingPOSTResponse(dto: MvtStkDto): __Observable<__StrictHttpResponse<MvtStkDto>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
     let __body: any = null;
     __body = dto;
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'POST',
       this.rootUrl + `/gestiondestock/v1/mvtstk/correctionneg`,
       __body,
@@ -71,11 +70,11 @@ class MvtStkControllerService extends __BaseService {
    * @return OK
    */
   correctionStockPosUsingPOSTResponse(dto: MvtStkDto): __Observable<__StrictHttpResponse<MvtStkDto>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
     let __body: any = null;
     __body = dto;
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'POST',
       this.rootUrl + `/gestiondestock/v1/mvtstk/correctionpos`,
       __body,
@@ -107,11 +106,11 @@ class MvtStkControllerService extends __BaseService {
    * @return OK
    */
   entreeStockUsingPOSTResponse(dto: MvtStkDto): __Observable<__StrictHttpResponse<MvtStkDto>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
     let __body: any = null;
     __body = dto;
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'POST',
       this.rootUrl + `/gestiondestock/v1/mvtstk/entree`,
       __body,
@@ -142,12 +141,12 @@ class MvtStkControllerService extends __BaseService {
    * @param idArticle idArticle
    * @return OK
    */
-  mvtStkArticleUsingGETResponse(idArticle: number): __Observable<__StrictHttpResponse<Array<MvtStkDto>>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
-    let __body: any = null;
+  mvtStkArticleUsingGETResponse(idArticle: number): __Observable<__StrictHttpResponse<MvtStkDto[]>> {
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
+    const __body: any = null;
 
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'GET',
       this.rootUrl + `/gestiondestock/v1/mvtstk/filter/article/${idArticle}`,
       __body,
@@ -160,7 +159,7 @@ class MvtStkControllerService extends __BaseService {
     return this.http.request<any>(req).pipe(
       __filter(_r => _r instanceof HttpResponse),
       __map((_r) => {
-        return _r as __StrictHttpResponse<Array<MvtStkDto>>;
+        return _r as __StrictHttpResponse<MvtStkDto[]>;
       })
     );
   }
@@ -168,9 +167,9 @@ class MvtStkControllerService extends __BaseService {
    * @param idArticle idArticle
    * @return OK
    */
-  mvtStkArticleUsingGET(idArticle: number): __Observable<Array<MvtStkDto>> {
+  mvtStkArticleUsingGET(idArticle: number): __Observable<MvtStkDto[]> {
     return this.mvtStkArticleUsingGETResponse(idArticle).pipe(
-      __map(_r => _r.body as Array<MvtStkDto>)
+      __map(_r => _r.body as MvtStkDto[])
     );
   }
 
@@ -179,11 +178,11 @@ class MvtStkControllerService extends __BaseService {
    * @return OK
    */
   sortieStockUsingPOSTResponse(dto: MvtStkDto): __Observable<__StrictHttpResponse<MvtStkDto>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
     let __body: any = null;
     __body = dto;
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'POST',
       this.rootUrl + `/gestiondestock/v1/mvtstk/sortie`,
       __body,
@@ -215,11 +214,11 @@ class MvtStkControllerService extends __BaseService {
    * @return OK
    */
   stockReelArticleUsingGETResponse(idArticle: number): __Observable<__StrictHttpResponse<number>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
-    let __body: any = null;
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
+    const __body: any = null;
 
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'GET',
       this.rootUrl + `/gestiondestock/v1/mvtstk/stockreel/${idArticle}`,
       __body,
@@ -247,7 +246,7 @@ class MvtStkControllerService extends __BaseService {
   }
 }
 
-module MvtStkControllerService {
+namespace MvtStkControllerService {
 }
 
 export { MvtStkControllerService }

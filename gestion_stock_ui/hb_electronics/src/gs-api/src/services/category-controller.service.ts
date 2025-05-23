@@ -1,4 +1,3 @@
-/* tslint:disable */
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpRequest, HttpResponse, HttpHeaders } from '@angular/common/http';
 import { BaseService as __BaseService } from '../base-service';
@@ -29,11 +28,11 @@ class CategoriesService extends __BaseService {
    * Cette methode permet de chercher et renvoyer la liste des categories qui existent dans la BDD
    * @return La liste des article / Une liste vide
    */
-  findAllResponse(): __Observable<__StrictHttpResponse<Array<CategoryDto>>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
-    let __body: any = null;
-    let req = new HttpRequest<any>(
+  findAllResponse(): __Observable<__StrictHttpResponse<CategoryDto[]>> {
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
+    const __body: any = null;
+    const req = new HttpRequest<any>(
       'GET',
       this.rootUrl + `/gestiondestock/v1/categories/all`,
       __body,
@@ -46,7 +45,7 @@ class CategoriesService extends __BaseService {
     return this.http.request<any>(req).pipe(
       __filter(_r => _r instanceof HttpResponse),
       __map((_r) => {
-        return _r as __StrictHttpResponse<Array<CategoryDto>>;
+        return _r as __StrictHttpResponse<CategoryDto[]>;
       })
     );
   }
@@ -54,9 +53,9 @@ class CategoriesService extends __BaseService {
    * Cette methode permet de chercher et renvoyer la liste des categories qui existent dans la BDD
    * @return La liste des article / Une liste vide
    */
-  findAll(): __Observable<Array<CategoryDto>> {
+  findAll(): __Observable<CategoryDto[]> {
     return this.findAllResponse().pipe(
-      __map(_r => _r.body as Array<CategoryDto>)
+      __map(_r => _r.body as CategoryDto[])
     );
   }
 
@@ -66,11 +65,11 @@ class CategoriesService extends __BaseService {
    * @return L'objet category cree / modifie
    */
   saveResponse(body?: CategoryDto): __Observable<__StrictHttpResponse<CategoryDto>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
     let __body: any = null;
     __body = body;
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'POST',
       this.rootUrl + `/gestiondestock/v1/categories/create`,
       __body,
@@ -103,11 +102,11 @@ class CategoriesService extends __BaseService {
    * @param idCategory undefined
    */
   deleteResponse(idCategory: number): __Observable<__StrictHttpResponse<null>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
-    let __body: any = null;
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
+    const __body: any = null;
 
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'DELETE',
       this.rootUrl + `/gestiondestock/v1/categories/delete/${idCategory}`,
       __body,
@@ -140,11 +139,11 @@ class CategoriesService extends __BaseService {
    * @return L'article a ete trouve dans la BDD
    */
   findByCodeResponse(codeCategory: string): __Observable<__StrictHttpResponse<CategoryDto>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
-    let __body: any = null;
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
+    const __body: any = null;
 
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'GET',
       this.rootUrl + `/gestiondestock/v1/categories/filter/${codeCategory}`,
       __body,
@@ -178,11 +177,11 @@ class CategoriesService extends __BaseService {
    * @return La categorie a ete trouve dans la BDD
    */
   findByIdResponse(idCategory: number): __Observable<__StrictHttpResponse<CategoryDto>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
-    let __body: any = null;
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
+    const __body: any = null;
 
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'GET',
       this.rootUrl + `/gestiondestock/v1/categories/${idCategory}`,
       __body,
@@ -211,7 +210,7 @@ class CategoriesService extends __BaseService {
   }
 }
 
-module CategoriesService {
+namespace CategoriesService {
 }
 
 export { CategoriesService }

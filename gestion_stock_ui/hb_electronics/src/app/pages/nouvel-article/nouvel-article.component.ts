@@ -16,8 +16,8 @@ export class NouvelArticleComponent implements OnInit {
 
   articleDto: ArticleDto = {};
   categorieDto: CategoryDto = {};
-  listeCategorie: Array<CategoryDto> = [];
-  errorMsg: Array<string> = [];
+  listeCategorie: CategoryDto[] = [];
+  errorMsg: string[] = [];
   file: File | null = null;
   imgUrl: string | ArrayBuffer = 'assets/product.png';
   

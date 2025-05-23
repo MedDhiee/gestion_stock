@@ -10,7 +10,7 @@ import {CategoryService} from '../../services/category/category.service';
 })
 export class CategorieComponent implements OnInit {
 
-  listCategories: Array<CategoryDto> = [];
+  listCategories: CategoryDto[] = [];
   selectedCatIdToDelete ? = -1;
   errorMsgs = '';
 

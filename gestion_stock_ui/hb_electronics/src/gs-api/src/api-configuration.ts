@@ -1,4 +1,3 @@
-/* tslint:disable */
 import { Injectable } from '@angular/core';
 
 /**
@@ -8,7 +7,7 @@ import { Injectable } from '@angular/core';
   providedIn: 'root',
 })
 export class ApiConfiguration {
-  rootUrl: string = '//localhost:8081';
+  rootUrl = '//localhost:8081';
 }
 
 export interface ApiConfigurationInterface {

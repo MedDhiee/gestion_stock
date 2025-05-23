@@ -1,4 +1,3 @@
-/* tslint:disable */
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpRequest, HttpResponse, HttpHeaders } from '@angular/common/http';
 import { BaseService as __BaseService } from '../base-service';
@@ -35,11 +34,11 @@ class CommandesclientsService extends __BaseService {
   /**
    * @return successful operation
    */
-  findAllResponse(): __Observable<__StrictHttpResponse<Array<CommandeDto>>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
-    let __body: any = null;
-    let req = new HttpRequest<any>(
+  findAllResponse(): __Observable<__StrictHttpResponse<CommandeDto[]>> {
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
+    const __body: any = null;
+    const req = new HttpRequest<any>(
       'GET',
       this.rootUrl + `/gestiondestock/v1/commandes/all`,
       __body,
@@ -52,16 +51,16 @@ class CommandesclientsService extends __BaseService {
     return this.http.request<any>(req).pipe(
       __filter(_r => _r instanceof HttpResponse),
       __map((_r) => {
-        return _r as __StrictHttpResponse<Array<CommandeDto>>;
+        return _r as __StrictHttpResponse<CommandeDto[]>;
       })
     );
   }
   /**
    * @return successful operation
    */
-  findAll(): __Observable<Array<CommandeDto>> {
+  findAll(): __Observable<CommandeDto[]> {
     return this.findAllResponse().pipe(
-      __map(_r => _r.body as Array<CommandeDto>)
+      __map(_r => _r.body as CommandeDto[])
     );
   }
 
@@ -70,11 +69,11 @@ class CommandesclientsService extends __BaseService {
    * @return successful operation
    */
   saveResponse(body?: CommandeDto): __Observable<__StrictHttpResponse<CommandeDto>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
     let __body: any = null;
     __body = body;
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'POST',
       this.rootUrl + `/gestiondestock/v1/commandes/create`,
       __body,
@@ -111,12 +110,12 @@ class CommandesclientsService extends __BaseService {
    * @return successful operation
    */
   deleteArticleResponse(params: CommandesclientsService.DeleteArticleParams): __Observable<__StrictHttpResponse<CommandeDto>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
-    let __body: any = null;
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
+    const __body: any = null;
 
 
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'DELETE',
       this.rootUrl + `/gestiondestock/v1/commandes/delete/article/${params.idCommande}/${params.idLigneCommande}`,
       __body,
@@ -152,11 +151,11 @@ class CommandesclientsService extends __BaseService {
    * @param idCommande undefined
    */
   deleteResponse(idCommande: number): __Observable<__StrictHttpResponse<null>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
-    let __body: any = null;
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
+    const __body: any = null;
 
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'DELETE',
       this.rootUrl + `/gestiondestock/v1/commandes/delete/${idCommande}`,
       __body,
@@ -187,11 +186,11 @@ class CommandesclientsService extends __BaseService {
    * @return successful operation
    */
   findByCodeResponse(codeCommande: string): __Observable<__StrictHttpResponse<CommandeDto>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
-    let __body: any = null;
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
+    const __body: any = null;
 
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'GET',
       this.rootUrl + `/gestiondestock/v1/commandes/filter/${codeCommande}`,
       __body,
@@ -222,12 +221,12 @@ class CommandesclientsService extends __BaseService {
    * @param idCommande undefined
    * @return successful operation
    */
-  findAllLignesCommandesClientByCommandeClientIdResponse(idCommande: number): __Observable<__StrictHttpResponse<Array<LigneCommandeDto>>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
-    let __body: any = null;
+  findAllLignesCommandesClientByCommandeClientIdResponse(idCommande: number): __Observable<__StrictHttpResponse<LigneCommandeDto[]>> {
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
+    const __body: any = null;
 
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'GET',
       this.rootUrl + `/gestiondestock/v1/commandes/lignesCommande/${idCommande}`,
       __body,
@@ -240,7 +239,7 @@ class CommandesclientsService extends __BaseService {
     return this.http.request<any>(req).pipe(
       __filter(_r => _r instanceof HttpResponse),
       __map((_r) => {
-        return _r as __StrictHttpResponse<Array<LigneCommandeDto>>;
+        return _r as __StrictHttpResponse<LigneCommandeDto[]>;
       })
     );
   }
@@ -248,9 +247,9 @@ class CommandesclientsService extends __BaseService {
    * @param idCommande undefined
    * @return successful operation
    */
-  findAllLignesCommandesClientByCommandeClientId(idCommande: number): __Observable<Array<LigneCommandeDto>> {
+  findAllLignesCommandesClientByCommandeClientId(idCommande: number): __Observable<LigneCommandeDto[]> {
     return this.findAllLignesCommandesClientByCommandeClientIdResponse(idCommande).pipe(
-      __map(_r => _r.body as Array<LigneCommandeDto>)
+      __map(_r => _r.body as LigneCommandeDto[])
     );
   }
 
@@ -266,13 +265,13 @@ class CommandesclientsService extends __BaseService {
    * @return successful operation
    */
   updateArticleResponse(params: CommandesclientsService.UpdateArticleParams): __Observable<__StrictHttpResponse<CommandeDto>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
-    let __body: any = null;
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
+    const __body: any = null;
 
 
 
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'PATCH',
       this.rootUrl + `/gestiondestock/v1/commandes/update/article/${params.idCommande}/${params.idLigneCommande}/${params.idArticle}`,
       __body,
@@ -318,12 +317,12 @@ class CommandesclientsService extends __BaseService {
    * @return successful operation
    */
   updateEtatCommandeResponse(params: CommandesclientsService.UpdateEtatCommandeParams): __Observable<__StrictHttpResponse<CommandeDto>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
-    let __body: any = null;
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
+    const __body: any = null;
 
 
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'PATCH',
       this.rootUrl + `/gestiondestock/v1/commandes/update/etat/${params.idCommande}/${params.etatCommande}`,
       __body,
@@ -367,13 +366,13 @@ class CommandesclientsService extends __BaseService {
    * @return successful operation
    */
   updateQuantiteCommandeResponse(params: CommandesclientsService.UpdateQuantiteCommandeParams): __Observable<__StrictHttpResponse<CommandeDto>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
-    let __body: any = null;
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
+    const __body: any = null;
 
 
 
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'PATCH',
       this.rootUrl + `/gestiondestock/v1/commandes/update/quantite/${params.idCommande}/${params.idLigneCommande}/${params.quantite}`,
       __body,
@@ -412,11 +411,11 @@ class CommandesclientsService extends __BaseService {
    * @return successful operation
    */
   findByIdResponse(idCommande: number): __Observable<__StrictHttpResponse<CommandeDto>> {
-    let __params = this.newParams();
-    let __headers = new HttpHeaders();
-    let __body: any = null;
+    const __params = this.newParams();
+    const __headers = new HttpHeaders();
+    const __body: any = null;
 
-    let req = new HttpRequest<any>(
+    const req = new HttpRequest<any>(
       'GET',
       this.rootUrl + `/gestiondestock/v1/commandes/${idCommande}`,
       __body,
@@ -444,7 +443,7 @@ class CommandesclientsService extends __BaseService {
   }
 }
 
-module CommandesclientsService {
+namespace CommandesclientsService {
 
   /**
    * Parameters for deleteArticle

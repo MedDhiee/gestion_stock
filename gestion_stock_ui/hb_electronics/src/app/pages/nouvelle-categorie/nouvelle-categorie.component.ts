@@ -11,7 +11,7 @@ import {CategoryService} from '../../services/category/category.service';
 export class NouvelleCategorieComponent implements OnInit {
 
   categoryDto: CategoryDto = {};
-  errorMsg: Array<string> = [];
+  errorMsg: string[] = [];
   constructor(
     private readonly router: Router,
     private readonly activatedRoute: ActivatedRoute,

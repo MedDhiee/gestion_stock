@@ -14,15 +14,15 @@ declare let window: any;
 export class NouvelCommandeComponent implements OnInit {
 
   searchedArticle: ArticleDto = {};
-  listArticle: Array<ArticleDto> = [];
+  listArticle: ArticleDto[] = [];
   codeArticle = '';
   quantite = '';
   commandeId: number | undefined;
 
-  lignesCommande: Array<LigneCommandeDto> = [];
+  lignesCommande: LigneCommandeDto[] = [];
   totalCommande = 0;
   articleNotYetSelected = false;
-  errorMsg: Array<string> = [];
+  errorMsg: string[] = [];
 
   constructor(
     private readonly router: Router,
