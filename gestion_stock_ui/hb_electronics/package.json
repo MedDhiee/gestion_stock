@@ -7,6 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "lint": "ng lint",
     "start:local": "npm run gs-api && ng serve -- --proxyConfig=proxy.conf.json",
     "gs-api": "npm run gs-api:create-dist && npm run gs-api:download && npm run gs-api:extract && npm run gs-api:swagger-gen",
     "gs-api:create-dist": "mkdir tools\\swagger\\dist && mkdir tools\\swagger\\src || exit 0",
