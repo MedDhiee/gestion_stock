@@ -47,7 +47,7 @@ jobs:
   sonarqube-analysis:
       name: SonarQube Frontend Analysis
       runs-on: ubuntu-latest
-      needs: [build-image, lint-check]
+      needs: [build-image]
       steps:
         - name: Checkout code
           uses: actions/checkout@v4
