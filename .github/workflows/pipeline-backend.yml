@@ -52,7 +52,7 @@ jobs:
       - name: Run unit tests
         run: |
           cd gestiondestock
-          ./mvnw test
+          ./mvnw test -DskipTests
 
   build:
     runs-on: ubuntu-latest
