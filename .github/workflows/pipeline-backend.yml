@@ -135,7 +135,7 @@ jobs:
 
       - name: Scan Docker image with Trivy
         run: |
-          trivy image ${{ secrets.DOCKERHUB_USERNAME }}/gestiondestock-backend:${{ steps.extract_version.outputs.VERSION }}
+          trivy image ${{ secrets.DOCKERHUB_USERNAME }}/gestiondestock-backend:latest
 
   ##deploy:
   #name: Deploy Backend to Kubernetes
