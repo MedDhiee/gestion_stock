@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gestiondestock-api
+  namespace: gestionstock
+  labels:
+    app: gestiondestock-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gestiondestock-api
+  template:
+    metadata:
+      labels:
+        app: gestiondestock-api
+    spec:
+      initContainers:
+        - name: wait-for-mysql
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z mysql 3306; do
+                echo "En attente de MySQL...";
+                sleep 3;
+              done;
+              echo "MySQL est prêt !"
+      containers:
+        - name: gestiondestock-api
+          image: gestiondestock-backend
+          # Never = utilise l'image buildée dans le docker de Minikube
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8081
+          env:
+            # DB_URL est utilisé par le CMD du Dockerfile via -Dspring.datasource.url=${DB_URL}
+            # Il faut pointer vers le Service K8s "mysql" et non "mysql-gestiondestock" (nom Docker Compose)
+            - name: DB_URL
+              value: "jdbc:mysql://mysql:3306/gestion?createDatabaseIfNotExist=true&useSSL=false&useUnicode=true&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://mysql:3306/gestion?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "root"
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: root-password
+            # Expose health endpoint (application.yml expose seulement prometheus par défaut)
+            - name: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
+              value: "health,prometheus"
+            # Nom de l'application pour les labels Prometheus (requis par les dashboards Grafana)
+            - name: MANAGEMENT_METRICS_TAGS_APPLICATION
+              value: "gestiondestock-api"
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+          livenessProbe:
+            tcpSocket:
+              port: 8081
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            failureThreshold: 5
+          readinessProbe:
+            tcpSocket:
+              port: 8081
+            initialDelaySeconds: 45
+            periodSeconds: 10
+            failureThreshold: 5

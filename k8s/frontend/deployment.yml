@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gestiondestock-ui
+  namespace: gestionstock
+  labels:
+    app: gestiondestock-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gestiondestock-ui
+  template:
+    metadata:
+      labels:
+        app: gestiondestock-ui
+    spec:
+      containers:
+        - name: gestiondestock-ui
+          image: gestiondestock-frontend
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 15
+            periodSeconds: 10

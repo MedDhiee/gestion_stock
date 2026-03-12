@@ -20,10 +20,10 @@ RUN APP_VERSION=$(ls /app | grep *.jar | awk 'NR==2{split($0,a,"-"); print a[3]}
 EXPOSE 8081
 
 
-ENV DB_URL="jdbc:mysql://mysql-gestiondestock:3306/gestion?createDatabaseIfNotExist=true&userSSL=false&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC"
+ENV DB_URL="jdbc:mysql://mysql:3306/gestion?createDatabaseIfNotExist=true&useSSL=false&useUnicode=true&allowPublicKeyRetrieval=true&serverTimezone=UTC"
 ENV MAILDEV_URL=localhost
 
 ENV ACTIVE_PROFILE=${PROFILE}
 ENV JAR_VERSION=${APP_VERSION}
 
-CMD ["java", "-jar", "-Dspring.profiles.active=${ACTIVE_PROFILE}", "-Dspring.datasource.url=${DB_URL}", "/app/gestiondestock-0.0.1-SNAPSHOT.jar"]
+CMD java -jar -Dspring.profiles.active=${ACTIVE_PROFILE} -Dspring.datasource.url=${DB_URL} /app/gestiondestock-0.0.1-SNAPSHOT.jar

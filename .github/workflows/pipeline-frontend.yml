@@ -7,7 +7,7 @@ on:
     paths:
       - gestion_stock_ui/hb_electronics/**
       - Docker/frontend/**
-      - 'docker-compose.yml'
+      - "docker-compose.yml"
       - .github/workflows/*-frontend.yml
 
 jobs:
@@ -44,22 +44,18 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/gestiondestock-ui:${{ steps.extract_version.outputs.VERSION }}
 
 #Intégrer SonarQube dans un pipeline frontend, c’est comme mettre un contrôle technique automatique sur ton code à chaque push. Ça te protège contre les erreurs subtiles, améliore la lisibilité, et augmente la fiabilité de ton application.
-  #deploy:
-   # name: Deploy Frontend
-  #  runs-on: ubuntu-latest
-   # needs: [ build-image ]
-    #steps:
+#deploy:
+# name: Deploy Frontend to Kubernetes
+# runs-on: ubuntu-latest
+# needs: [ build-image ]
+# steps:
+#  - name: Set K8s context
+#    uses: azure/k8s-set-context@v3
+#    with:
+#      method: kubeconfig
+#      kubeconfig: ${{ secrets.KUBE_CONFIG }}
 
-     # - name: Create deployment folder
-      # run: ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} "mkdir -p ci-cd"
-
-        # - name: Copy docker-compose file
-      # run: scp -oStrictHostKeyChecking=no docker-compose.yml ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }}:ci-cd/docker-compose.yml
-
-        #- name: Set ENV variable and deploy
-          #run: |
-          #  ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} <<EOF
-          # cd ci-cd
-          # docker compose -f docker-compose.yml pull -q
-          # docker compose -f docker-compose.yml up -d
-          # EOF
+#  - name: Deploy to Kubernetes
+#    run: |
+#      kubectl set image deployment/gestiondestock-ui gestiondestock-ui=${{ secrets.DOCKERHUB_USERNAME }}/gestiondestock-ui:${{ steps.extract_version.outputs.VERSION }} -n gestionstock
+#      kubectl rollout restart deployment/gestiondestock-ui -n gestionstock
