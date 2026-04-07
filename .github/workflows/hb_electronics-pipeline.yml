@@ -1,0 +1,199 @@
+name: CI/CD Pipeline for hb_electronics
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      enable_deploy:
+        description: 'Enable deployment to production'
+        required: false
+        default: 'false'
+
+env:
+  REGISTRY_HOST: ${{ secrets.REGISTRY_HOST }}
+  REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+  REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+  IMAGE_TAG: ${{ secrets.REGISTRY_HOST }}/hb_electronics:${{ github.sha }}
+  ENABLE_DEPLOY: ${{ secrets.ENABLE_DEPLOY }}
+
+jobs:
+  test:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: 'C:/Users/meddh/AppData/Local/Temp/devops_multi_agents_repo_w3j5390_/gestion_stock_ui/hb_electronics'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: npm ci
+      - name: Run unit tests
+        run: npm test -- --watch=false
+
+  build:
+    runs-on: windows-latest
+    needs: test
+    defaults:
+      run:
+        working-directory: 'C:/Users/meddh/AppData/Local/Temp/devops_multi_agents_repo_w3j5390_/gestion_stock_ui/hb_electronics'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-artifact
+          path: 'C:/Users/meddh/AppData/Local/Temp/devops_multi_agents_repo_w3j5390_/gestion_stock_ui/hb_electronics/dist'
+          retention-days: 5
+
+  package:
+    runs-on: windows-latest
+    needs: build
+    defaults:
+      run:
+        working-directory: 'C:/Users/meddh/AppData/Local/Temp/devops_multi_agents_repo_w3j5390_/gestion_stock_ui/hb_electronics'
+    env:
+      REGISTRY_HOST: ${{ env.REGISTRY_HOST }}
+      REGISTRY_USERNAME: ${{ env.REGISTRY_USERNAME }}
+      REGISTRY_PASSWORD: ${{ env.REGISTRY_PASSWORD }}
+      IMAGE_TAG: ${{ env.IMAGE_TAG }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Pack package
+        run: npm pack
+      - name: Check for Dockerfile
+        id: check_dockerfile
+        run: |
+          if (Test-Path 'Dockerfile') {
+            Write-Output "dockerfile_exists=true" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Output "dockerfile_exists=false" >> $env:GITHUB_OUTPUT
+          }
+      - name: Build and push Docker image
+        if: steps.check_dockerfile.outputs.dockerfile_exists == 'true'
+        run: |
+          docker build -t ${{ env.IMAGE_TAG }} .
+          docker login -u ${{ env.REGISTRY_USERNAME }} -p ${{ env.REGISTRY_PASSWORD }} ${{ env.REGISTRY_HOST }}
+          docker push ${{ env.IMAGE_TAG }}
+      - name: Upload npm package artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: npm-package
+          path: 'C:/Users/meddh/AppData/Local/Temp/devops_multi_agents_repo_w3j5390_/gestion_stock_ui/hb_electronics/*.tgz'
+          retention-days: 5
+
+  upload_artifact:
+    runs-on: windows-latest
+    needs: package
+    defaults:
+      run:
+        working-directory: 'C:/Users/meddh/AppData/Local/Temp/devops_multi_agents_repo_w3j5390_/gestion_stock_ui/hb_electronics'
+    steps:
+      - name: Download dist artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-artifact
+          path: 'C:/Users/meddh/AppData/Local/Temp/devops_multi_agents_repo_w3j5390_/gestion_stock_ui/hb_electronics/dist'
+      - name: Upload final dist artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: hb_electronics-dist
+          path: 'C:/Users/meddh/AppData/Local/Temp/devops_multi_agents_repo_w3j5390_/gestion_stock_ui/hb_electronics/dist'
+          retention-days: 30
+      - name: Download npm package artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: npm-package
+          path: 'C:/Users/meddh/AppData/Local/Temp/devops_multi_agents_repo_w3j5390_/gestion_stock_ui/hb_electronics'
+      - name: Upload final npm package artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: hb_electronics-package
+          path: 'C:/Users/meddh/AppData/Local/Temp/devops_multi_agents_repo_w3j5390_/gestion_stock_ui/hb_electronics/*.tgz'
+          retention-days: 30
+
+  security_scan:
+    runs-on: windows-latest
+    needs: upload_artifact
+    env:
+      REGISTRY_HOST: ${{ env.REGISTRY_HOST }}
+      REGISTRY_USERNAME: ${{ env.REGISTRY_USERNAME }}
+      REGISTRY_PASSWORD: ${{ env.REGISTRY_PASSWORD }}
+      IMAGE_TAG: ${{ env.IMAGE_TAG }}
+    steps:
+      - name: Check if Dockerfile exists
+        id: check_dockerfile
+        run: |
+          if (Test-Path 'Dockerfile') {
+            Write-Output "dockerfile_exists=true" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Output "dockerfile_exists=false" >> $env:GITHUB_OUTPUT
+          }
+      - name: Pull Docker image for scanning
+        if: steps.check_dockerfile.outputs.dockerfile_exists == 'true'
+        run: |
+          docker login -u ${{ env.REGISTRY_USERNAME }} -p ${{ env.REGISTRY_PASSWORD }} ${{ env.REGISTRY_HOST }}
+          docker pull ${{ env.IMAGE_TAG }}
+      - name: Run Trivy vulnerability scan on image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE_TAG }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1'
+        if: steps.check_dockerfile.outputs.dockerfile_exists == 'true'
+      - name: Run Trivy filesystem scan
+        if: steps.check_dockerfile.outputs.dockerfile_exists != 'true'
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          path: 'C:/Users/meddh/AppData/Local/Temp/devops_multi_agents_repo_w3j5390_/gestion_stock_ui/hb_electronics/dist'
+          format: 'sarif'
+          output: 'trivy-fs-results.sarif'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1'
+      - name: Upload image scan results
+        uses: actions/upload-artifact@v3
+        with:
+          name: trivy-results
+          path: trivy-results.sarif
+        if: steps.check_dockerfile.outputs.dockerfile_exists == 'true'
+      - name: Upload filesystem scan results
+        uses: actions/upload-artifact@v3
+        with:
+          name: trivy-fs-results
+          path: trivy-fs-results.sarif
+        if: steps.check_dockerfile.outputs.dockerfile_exists != 'true'
+
+  deploy:
+    runs-on: windows-latest
+    needs: security_scan
+    if: github.ref == 'refs/heads/main' && (github.event.inputs.enable_deploy == 'true' || env.ENABLE_DEPLOY == 'true')
+    env:
+      ENABLE_DEPLOY: ${{ env.ENABLE_DEPLOY }}
+    defaults:
+      run:
+        working-directory: 'C:/Users/meddh/AppData/Local/Temp/devops_multi_agents_repo_w3j5390_/gestion_stock_ui/hb_electronics'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Deploy to production
+        run: |
+          echo "Starting deployment..."
+          # Example kubectl deployment
+          # kubectl apply -f k8s/
+          # Example helm deployment
+          # helm upgrade --install app ./chart
+          echo "Deployment completed."
