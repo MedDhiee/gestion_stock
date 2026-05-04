@@ -1,4 +1,4 @@
-name: hb-electronics-pipeline
+name: hb_electronics-pipeline
 on:
   push:
     branches: [ master ]
@@ -8,8 +8,8 @@ env:
   REGISTRY_HOST: ${{ vars.REGISTRY_HOST || 'ghcr.io' }}
   REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
-  IMAGE_NAME: hb-electronics
-  IMAGE_TAG: ${{ vars.REGISTRY_HOST || 'ghcr.io' }}/${{ github.repository_owner }}/hb-electronics:${{ github.sha }}
+  IMAGE_NAME: hb_electronics
+  IMAGE_TAG: ${{ vars.REGISTRY_HOST || 'ghcr.io' }}/${{ github.repository_owner }}/hb_electronics:${{ github.sha }}
   ENABLE_DEPLOY: ${{ vars.ENABLE_DEPLOY || 'false' }}
 
 jobs:
@@ -73,7 +73,7 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: hb-electronics-artifact
+          name: hb_electronics-artifact
           path: |
             gestion_stock_ui/hb_electronics/dist/**
             gestion_stock_ui/hb_electronics/*.tgz
