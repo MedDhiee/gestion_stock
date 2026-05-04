@@ -1,0 +1,114 @@
+name: hb_electronics-pipeline
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+
+env:
+  REGISTRY_HOST: ${{ vars.REGISTRY_HOST || 'ghcr.io' }}
+  REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+  REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+  IMAGE_NAME: hb_electronics
+  IMAGE_TAG: ${{ env.REGISTRY_HOST }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+  ENABLE_DEPLOY: ${{ vars.ENABLE_DEPLOY || 'false' }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "C:/Users/meddh/Downloads/PFE_TALAN/gestion_stock/gestion_stock_ui/hb_electronics"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Runtime setup info
+        run: |
+          echo 'Using Node.js runtime'
+      - name: Unit tests
+        run: |
+          npm ci
+          npm test -- --watch=false
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "C:/Users/meddh/Downloads/PFE_TALAN/gestion_stock/gestion_stock_ui/hb_electronics"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Build
+        run: |
+          npm ci
+          npm run build
+
+  package:
+    needs: build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "C:/Users/meddh/Downloads/PFE_TALAN/gestion_stock/gestion_stock_ui/hb_electronics"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Package + Docker build/push
+        run: |
+          npm pack
+          if [ -f Dockerfile ]; then
+            if [ -n "${REGISTRY_USERNAME:-}" ] && [ -n "${REGISTRY_PASSWORD:-}" ]; then
+              echo "$REGISTRY_PASSWORD" | docker login "$REGISTRY_HOST" -u "$REGISTRY_USERNAME" --password-stdin
+            fi
+            docker build -f Dockerfile -t "$IMAGE_TAG" .
+            docker push "$IMAGE_TAG"
+          else
+            echo 'Dockerfile not found; skipping image build and push.'
+          fi
+
+  upload-artifact:
+    needs: package
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "C:/Users/meddh/Downloads/PFE_TALAN/gestion_stock/gestion_stock_ui/hb_electronics"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: hb_electronics-artifact
+          path: |
+            dist/**
+            *.tgz
+
+  security-scan:
+    needs: upload-artifact
+    runs-on: ubuntu-latest
+    steps:
+      - name: Container security scan
+        run: |
+          if [ -n "${IMAGE_TAG:-}" ]; then
+            docker run --rm aquasec/trivy:0.57.1 image --no-progress --severity HIGH,CRITICAL --exit-code 1 "$IMAGE_TAG"
+          else
+            echo 'IMAGE_TAG is empty; skipping image scan.'
+          fi
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && env.ENABLE_DEPLOY == 'true'
+    needs: security-scan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "C:/Users/meddh/Downloads/PFE_TALAN/gestion_stock/gestion_stock_ui/hb_electronics"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy
+        run: |
+          echo 'Example deploy: kubectl apply -f k8s/'
+          echo 'Example deploy: helm upgrade --install app ./chart'
