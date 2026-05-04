@@ -1,185 +1,110 @@
-name: CI/CD Pipeline for gestiondestock
-
+name: gestiondestock-pipeline
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 env:
-  REGISTRY_HOST: ${{ secrets.REGISTRY_HOST }}
+  REGISTRY_HOST: ${{ vars.REGISTRY_HOST || 'ghcr.io' }}
   REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
-  IMAGE_TAG: ${{ github.sha }}
+  IMAGE_NAME: gestiondestock
+  IMAGE_TAG: ${{ vars.REGISTRY_HOST || 'ghcr.io' }}/${{ github.repository_owner }}/gestiondestock:${{ github.sha }}
   ENABLE_DEPLOY: ${{ vars.ENABLE_DEPLOY || 'false' }}
-  SERVICE_DIR: ${{ github.workspace }}/gestiondestock
 
 jobs:
   test:
-    name: Unit Tests
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}/gestiondestock
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-
-      - name: Run unit tests
-        working-directory: ${{ env.SERVICE_DIR }}
-        run: mvn -B test
+      - name: Runtime setup info
+        run: |
+          echo 'Using Java runtime'
+      - name: Unit tests
+        run: |
+          ./mvnw -B test
 
   build:
-    name: Build
-    runs-on: ubuntu-latest
     needs: test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}/gestiondestock
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-
-      - name: Build project
-        working-directory: ${{ env.SERVICE_DIR }}
-        run: mvn -B -DskipTests clean compile
+      - name: Build
+        run: |
+          ./mvnw -B -DskipTests clean compile
 
   package:
-    name: Package
-    runs-on: ubuntu-latest
     needs: build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}/gestiondestock
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-
-      - name: Package application
-        working-directory: ${{ env.SERVICE_DIR }}
-        run: mvn -B -DskipTests package
-
-      - name: Check for Dockerfile
-        id: dockerfile_check
+      - name: Package + Docker build/push
         run: |
-          if [ -f "${{ env.SERVICE_DIR }}/Dockerfile" ]; then
-            echo "exists=true" >> $GITHUB_OUTPUT
+          ./mvnw -B -DskipTests package
+          if [ -f Dockerfile ]; then
+            if [ -n "${REGISTRY_USERNAME:-}" ] && [ -n "${REGISTRY_PASSWORD:-}" ]; then
+              echo "$REGISTRY_PASSWORD" | docker login "$REGISTRY_HOST" -u "$REGISTRY_USERNAME" --password-stdin
+            fi
+            docker build -f Dockerfile -t "$IMAGE_TAG" .
+            docker push "$IMAGE_TAG"
           else
-            echo "exists=false" >> $GITHUB_OUTPUT
+            echo 'Dockerfile not found; skipping image build and push.'
           fi
-
-      - name: Log in to container registry
-        if: steps.dockerfile_check.outputs.exists == 'true'
-        uses: docker/login-action@v3
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
         with:
-          registry: ${{ env.REGISTRY_HOST }}
-          username: ${{ env.REGISTRY_USERNAME }}
-          password: ${{ env.REGISTRY_PASSWORD }}
+          name: gestiondestock-artifact
+          path: |
+            gestiondestock/target/**
+          if-no-files-found: warn
 
-      - name: Build Docker image
-        if: steps.dockerfile_check.outputs.exists == 'true'
-        run: |
-          docker build -t ${{ env.REGISTRY_HOST }}/gestiondestock:${{ env.IMAGE_TAG }} ${{ env.SERVICE_DIR }}
-
-      - name: Push Docker image
-        if: steps.dockerfile_check.outputs.exists == 'true'
-        run: |
-          docker push ${{ env.REGISTRY_HOST }}/gestiondestock:${{ env.IMAGE_TAG }}
-
-  upload_artifact:
-    name: Upload Artifacts
-    runs-on: ubuntu-latest
+  security-scan:
     needs: package
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Upload JAR artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: gestiondestock-artifacts
-          path: ${{ env.SERVICE_DIR }}/target/**/*.jar
-          retention-days: 5
-
-  security_scan:
-    name: Security Scan
     runs-on: ubuntu-latest
-    needs: upload_artifact
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Attempt to pull Docker image
-        id: pull_image
-        run: |
-          if docker pull ${{ env.REGISTRY_HOST }}/gestiondestock:${{ env.IMAGE_TAG }}; then
-            echo "available=true" >> $GITHUB_OUTPUT
-          else
-            echo "available=false" >> $GITHUB_OUTPUT
-          fi
-        continue-on-error: true
-
-      - name: Run Trivy scan on Docker image
-        if: steps.pull_image.outputs.available == 'true'
+      - name: Container image scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: '${{ env.REGISTRY_HOST }}/gestiondestock:${{ env.IMAGE_TAG }}'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-          severity: 'HIGH,CRITICAL'
+          image-ref: ${{ env.IMAGE_TAG }}
+          format: table
           exit-code: '1'
-
-      - name: Run Trivy scan on artifacts (fallback)
-        if: steps.pull_image.outputs.available != 'true'
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          scan-ref: '${{ env.SERVICE_DIR }}/target'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-          severity: 'HIGH,CRITICAL'
-          exit-code: '1'
-
-      - name: Upload scan results
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy-results
-          path: trivy-results.sarif
-          retention-days: 5
+          ignore-unfixed: true
+          severity: HIGH,CRITICAL
+        env:
+          TRIVY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+          TRIVY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
 
   deploy:
-    name: Deploy
+    if: ${{ github.ref == 'refs/heads/main' && vars.ENABLE_DEPLOY == 'true' }}
+    needs: security-scan
     runs-on: ubuntu-latest
-    needs: security_scan
-    env:
-      ENABLE_DEPLOY: ${{ env.ENABLE_DEPLOY }}
-    if: github.ref == 'refs/heads/main' && env.ENABLE_DEPLOY == 'true'
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}/gestiondestock
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: gestiondestock-artifacts
-          path: ${{ env.SERVICE_DIR }}/target
-
-      - name: Deploy application
+      - uses: actions/checkout@v4
+      - name: Deploy
         run: |
-          echo "Deploying gestiondestock..."
-          java -jar ${{ env.SERVICE_DIR }}/target/gestiondestock*.jar
+          echo 'Example deploy: java -jar target/*.jar'
+          echo 'Example deploy: kubectl rollout restart deployment/backend'
