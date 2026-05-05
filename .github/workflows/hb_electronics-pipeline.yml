@@ -1,4 +1,3 @@
-# generated-at: 2026-05-05 15:52:03 UTC
 name: hb_electronics-pipeline
 on:
   push:
