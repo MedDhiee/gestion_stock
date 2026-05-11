@@ -30,7 +30,7 @@ jobs:
       - name: Unit tests
         run: |
           npm ci
-          npm test -- --watch=false
+          npm test -- --watch=false --browsers=ChromeHeadless
 
   build:
     needs: test
