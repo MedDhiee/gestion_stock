@@ -27,6 +27,8 @@ jobs:
       - name: Runtime setup info
         run: |
           echo 'Using Java runtime'
+      - name: Make Maven wrapper executable
+        run: chmod +x mvnw
       - name: Unit tests
         run: |
           ./mvnw -B test
