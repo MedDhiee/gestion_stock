@@ -7,9 +7,14 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Runtime stage
-FROM amazoncorretto:17
+FROM eclipse-temurin:17-jre-jammy
 ARG PROFILE=dev
 ARG APP_VERSION=1.0.0
+
+# Install chaos engineering tools (tc for network latency, stress-ng for CPU/memory stress)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends iproute2 stress-ng && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY --from=build /build/target/gestiondestock-*.jar /app/
