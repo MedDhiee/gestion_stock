@@ -30,7 +30,7 @@ jobs:
           echo 'Using Java runtime'
       - name: Unit tests
         run: |
-          bash mvnw -B test
+          ./mvnw -B test
 
   build:
     needs: test
@@ -46,7 +46,7 @@ jobs:
           java-version: '17'
       - name: Build
         run: |
-          bash mvnw -B -DskipTests clean compile
+          ./mvnw -B -DskipTests clean compile
 
   package:
     needs: build
@@ -62,7 +62,7 @@ jobs:
           java-version: '17'
       - name: Package + Docker build/push
         run: |
-          bash mvnw -B -DskipTests package
+          ./mvnw -B -DskipTests package
           if [ -f Dockerfile ]; then
             if [ -n "${REGISTRY_USERNAME:-}" ] && [ -n "${REGISTRY_PASSWORD:-}" ]; then
               echo "$REGISTRY_PASSWORD" | docker login "$REGISTRY_HOST" -u "$REGISTRY_USERNAME" --password-stdin
