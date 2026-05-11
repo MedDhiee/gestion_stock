@@ -11,6 +11,7 @@ env:
   IMAGE_NAME: hb_electronics
   IMAGE_TAG: ${{ vars.REGISTRY_HOST || 'ghcr.io' }}/${{ github.repository_owner }}/hb_electronics:${{ github.sha }}
   ENABLE_DEPLOY: ${{ vars.ENABLE_DEPLOY || 'false' }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   test:

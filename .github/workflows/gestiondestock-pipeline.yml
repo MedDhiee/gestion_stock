@@ -11,6 +11,7 @@ env:
   IMAGE_NAME: gestiondestock
   IMAGE_TAG: ${{ vars.REGISTRY_HOST || 'ghcr.io' }}/${{ github.repository_owner }}/gestiondestock:${{ github.sha }}
   ENABLE_DEPLOY: ${{ vars.ENABLE_DEPLOY || 'false' }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   test:
@@ -27,8 +28,6 @@ jobs:
       - name: Runtime setup info
         run: |
           echo 'Using Java runtime'
-      - name: Make Maven wrapper executable
-        run: chmod +x mvnw
       - name: Unit tests
         run: |
           ./mvnw -B test
