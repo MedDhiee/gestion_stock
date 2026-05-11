@@ -1,4 +1,3 @@
-# generated-at: 2026-05-11 09:46:14 UTC
 name: gestiondestock-pipeline
 on:
   push:
@@ -28,8 +27,6 @@ jobs:
       - name: Runtime setup info
         run: |
           echo 'Using Java runtime'
-      - name: Make Maven wrapper executable
-        run: chmod +x mvnw
       - name: Unit tests
         run: |
           ./mvnw -B test
