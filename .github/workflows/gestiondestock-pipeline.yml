@@ -1,4 +1,3 @@
-# generated-at: 2026-05-12 08:57:55 UTC
 name: gestiondestock-pipeline
 on:
   push:
