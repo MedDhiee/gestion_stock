@@ -1,117 +1,57 @@
-# generated-at: 2026-05-20 08:45:08 UTC
-name: hb_electronics-pipeline
+name: hb_electronics CI/CD Pipeline
+
 on:
   push:
-    branches: [ master ]
+    branches:
+      - main
   pull_request:
-
-env:
-  REGISTRY_HOST: ${{ vars.REGISTRY_HOST || 'ghcr.io' }}
-  REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
-  REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
-  IMAGE_NAME: hb_electronics
-  IMAGE_TAG: ${{ vars.REGISTRY_HOST || 'ghcr.io' }}/${{ github.repository_owner }}/hb_electronics:${{ github.sha }}
-  ENABLE_DEPLOY: ${{ vars.ENABLE_DEPLOY || 'false' }}
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    branches:
+      - main
 
 jobs:
-  test:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{ github.workspace }}/gestion_stock_ui/hb_electronics
+    working-directory: ${{ github.workspace }}/gestion_stock_ui/hb_electronics
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-      - name: Runtime setup info
-        run: |
-          echo 'Using Node.js runtime'
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Unit tests
         run: |
           npm ci
           npm test -- --watch=false
 
-  build:
-    needs: test
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{ github.workspace }}/gestion_stock_ui/hb_electronics
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
       - name: Build
         run: |
           npm ci
           npm run build
 
-  package:
-    needs: build
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{ github.workspace }}/gestion_stock_ui/hb_electronics
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-      - name: Package + Docker build/push
+      - name: Package
         run: |
           npm pack
-          if [ -f Dockerfile ]; then
-            if [ -n "${REGISTRY_USERNAME:-}" ] && [ -n "${REGISTRY_PASSWORD:-}" ]; then
-              echo "$REGISTRY_PASSWORD" | docker login "$REGISTRY_HOST" -u "$REGISTRY_USERNAME" --password-stdin
-            fi
-            docker build -f Dockerfile -t "$IMAGE_TAG" .
-            docker push "$IMAGE_TAG"
-          else
-            echo 'Dockerfile not found; skipping image build and push.'
-          fi
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: hb_electronics-artifact
-          path: |
-            gestion_stock_ui/hb_electronics/dist/**
-            gestion_stock_ui/hb_electronics/*.tgz
-          if-no-files-found: warn
 
-  security-scan:
-    needs: package
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
         with:
-          name: hb_electronics-artifact
-          path: artifact-output
-        continue-on-error: true
-      - name: Filesystem security scan
+          name: hb_electronics
+          path: gestion_stock_ui/hb_electronics/dist/**,gestion_stock_ui/hb_electronics/*.tgz
+
+      - name: Security scan
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: fs
-          scan-ref: .
-          format: table
-          exit-code: '0'
-          ignore-unfixed: true
-          severity: HIGH,CRITICAL
+          image: ${{ github.sha }}
+          format: json
+          output: /tmp/trivy.json
+          severity: CRITICAL,HIGH
+          fail-on: CRITICAL,HIGH
 
-  deploy:
-    if: ${{ github.ref == 'refs/heads/master' && vars.ENABLE_DEPLOY == 'true' }}
-    needs: security-scan
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{ github.workspace }}/gestion_stock_ui/hb_electronics
-    steps:
-      - uses: actions/checkout@v4
       - name: Deploy
+        if: ${{ github.ref == 'refs/heads/main' && env.ENABLE_DEPLOY == 'true' }}
+        env:
+          REGISTRY_HOST: ${{ secrets.REGISTRY_HOST }}
+          REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+          IMAGE_TAG: ${{ github.sha }}
         run: |
           echo 'Example deploy: kubectl apply -f k8s/'
           echo 'Example deploy: helm upgrade --install app ./chart'
