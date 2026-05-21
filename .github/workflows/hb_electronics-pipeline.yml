@@ -24,9 +24,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - name: Runtime setup info
+        run: |
+          echo 'Using Node.js runtime'
       - name: Unit tests
-        env:
-          CI: "true"
         run: |
           npm ci
           npm test -- --watch=false
