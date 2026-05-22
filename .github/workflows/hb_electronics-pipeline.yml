@@ -1,116 +1,189 @@
-name: hb_electronics-pipeline
+name: CI/CD Pipeline for hb_electronics
+
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
+    branches: [master]
 
 env:
-  REGISTRY_HOST: ${{ vars.REGISTRY_HOST || 'ghcr.io' }}
-  REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+  CI: "true"
+  SERVICE_PATH: gestion_stock_ui/hb_electronics
+  REGISTRY_HOST: ${{ vars.REGISTRY_HOST }}
+  REGISTRY_USERNAME: ${{ vars.REGISTRY_USERNAME }}
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
-  IMAGE_NAME: hb_electronics
-  IMAGE_TAG: ${{ vars.REGISTRY_HOST || 'ghcr.io' }}/${{ github.repository_owner }}/hb_electronics:${{ github.sha }}
-  ENABLE_DEPLOY: ${{ vars.ENABLE_DEPLOY || 'false' }}
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  IMAGE_TAG: ${{ vars.IMAGE_TAG }}
+  ENABLE_DEPLOY: ${{ vars.ENABLE_DEPLOY }}
 
 jobs:
   test:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ${{ github.workspace }}/gestion_stock_ui/hb_electronics
+        working-directory: ${{ github.workspace }}/${{ env.SERVICE_PATH }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '24'
-      - name: Runtime setup info
-        run: |
-          echo 'Using Node.js runtime'
-      - name: Unit tests
-        run: |
-          npm ci
-          npm test -- --watch=false
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ${{ env.SERVICE_PATH }}/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm test -- --watch=false
+        env:
+          CI: "true"
 
   build:
-    needs: test
     runs-on: ubuntu-latest
+    needs: test
     defaults:
       run:
-        working-directory: ${{ github.workspace }}/gestion_stock_ui/hb_electronics
+        working-directory: ${{ github.workspace }}/${{ env.SERVICE_PATH }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '24'
-      - name: Build
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ${{ env.SERVICE_PATH }}/package-lock.json
+
+      - name: Install dependencies and build
         run: |
           npm ci
           npm run build
 
   package:
-    needs: build
     runs-on: ubuntu-latest
+    needs: build
     defaults:
       run:
-        working-directory: ${{ github.workspace }}/gestion_stock_ui/hb_electronics
+        working-directory: ${{ github.workspace }}/${{ env.SERVICE_PATH }}
+    outputs:
+      image_built: ${{ steps.docker_build.outputs.image_built }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '24'
-      - name: Package + Docker build/push
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ${{ env.SERVICE_PATH }}/package-lock.json
+
+      - name: Package application
         run: |
+          npm ci
           npm pack
-          if [ -f Dockerfile ]; then
-            if [ -n "${REGISTRY_USERNAME:-}" ] && [ -n "${REGISTRY_PASSWORD:-}" ]; then
-              echo "$REGISTRY_PASSWORD" | docker login "$REGISTRY_HOST" -u "$REGISTRY_USERNAME" --password-stdin
-            fi
-            docker build -f Dockerfile -t "$IMAGE_TAG" .
-            docker push "$IMAGE_TAG"
+
+      - name: Check for Dockerfile
+        id: check_dockerfile
+        run: |
+          if [ -f "Dockerfile" ]; then
+            echo "dockerfile_exists=true" >> $GITHUB_OUTPUT
           else
-            echo 'Dockerfile not found; skipping image build and push.'
+            echo "dockerfile_exists=false" >> $GITHUB_OUTPUT
           fi
+
+      - name: Set up Docker Buildx
+        if: ${{ steps.check_dockerfile.outputs.dockerfile_exists == 'true' }}
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to container registry
+        if: ${{ steps.check_dockerfile.outputs.dockerfile_exists == 'true' }}
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY_HOST }}
+          username: ${{ env.REGISTRY_USERNAME }}
+          password: ${{ env.REGISTRY_PASSWORD }}
+
+      - name: Build and push Docker image
+        if: ${{ steps.check_dockerfile.outputs.dockerfile_exists == 'true' }}
+        id: docker_build
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ github.workspace }}/${{ env.SERVICE_PATH }}
+          push: true
+          tags: ${{ env.REGISTRY_HOST }}/${{ env.IMAGE_TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Set image built output
+        if: ${{ steps.check_dockerfile.outputs.dockerfile_exists == 'true' }}
+        run: echo "image_built=true" >> $GITHUB_OUTPUT
+        id: set_output
+
+  upload_artifact:
+    runs-on: ubuntu-latest
+    needs: package
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}/${{ env.SERVICE_PATH }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ${{ env.SERVICE_PATH }}/package-lock.json
+
+      - name: Rebuild and package for artifact
+        run: |
+          npm ci
+          npm run build
+          npm pack
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: hb_electronics-artifact
+          name: hb_electronics-build
           path: |
-            gestion_stock_ui/hb_electronics/dist/**
-            gestion_stock_ui/hb_electronics/*.tgz
+            ${{ github.workspace }}/${{ env.SERVICE_PATH }}/dist/**
+            ${{ github.workspace }}/${{ env.SERVICE_PATH }}/*.tgz
           if-no-files-found: warn
 
-  security-scan:
-    needs: package
+  security_scan:
     runs-on: ubuntu-latest
+    needs: upload_artifact
     steps:
-      - uses: actions/checkout@v4
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: hb_electronics-artifact
-          path: artifact-output
-        continue-on-error: true
-      - name: Filesystem security scan
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Trivy filesystem scan
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: fs
-          scan-ref: .
-          format: table
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'table'
           exit-code: '0'
           ignore-unfixed: true
-          severity: HIGH,CRITICAL
+          severity: 'HIGH,CRITICAL'
 
   deploy:
-    if: ${{ github.ref == 'refs/heads/master' && vars.ENABLE_DEPLOY == 'true' }}
-    needs: security-scan
     runs-on: ubuntu-latest
+    needs: security_scan
+    if: ${{ github.ref == 'refs/heads/master' && vars.ENABLE_DEPLOY == 'true' }}
     defaults:
       run:
-        working-directory: ${{ github.workspace }}/gestion_stock_ui/hb_electronics
+        working-directory: ${{ github.workspace }}/${{ env.SERVICE_PATH }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Deploy
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy application
         run: |
-          echo 'Example deploy: kubectl apply -f k8s/'
-          echo 'Example deploy: helm upgrade --install app ./chart'
+          echo "Example deploy: kubectl apply -f k8s/'"
+          echo "Example deploy: helm upgrade --install app ./chart'"
