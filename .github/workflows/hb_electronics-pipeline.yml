@@ -1,102 +1,116 @@
-name: CI/CD Pipeline for hb_electronics
-
+name: hb_electronics-pipeline
 on:
   push:
-    branches: [master]
+    branches: [ master ]
   pull_request:
-    branches: [master]
 
 env:
-  CI: "true"
-  REGISTRY_HOST: ${{ vars.REGISTRY_HOST }}
-  REGISTRY_USERNAME: ${{ vars.REGISTRY_USERNAME }}
+  REGISTRY_HOST: ${{ vars.REGISTRY_HOST || 'ghcr.io' }}
+  REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
-  IMAGE_TAG: ${{ github.sha }}
-  ENABLE_DEPLOY: ${{ vars.ENABLE_DEPLOY }}
+  IMAGE_NAME: hb_electronics
+  IMAGE_TAG: ${{ vars.REGISTRY_HOST || 'ghcr.io' }}/${{ github.repository_owner }}/hb_electronics:${{ github.sha }}
+  ENABLE_DEPLOY: ${{ vars.ENABLE_DEPLOY || 'false' }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   test:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: gestion_stock_ui/hb_electronics
+        working-directory: ${{ github.workspace }}/gestion_stock_ui/hb_electronics
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: gestion_stock_ui/hb_electronics/package-lock.json
-      - run: npm ci
-      - run: npm test -- --watch=false
+          node-version: '24'
+      - name: Runtime setup info
+        run: |
+          echo 'Using Node.js runtime'
+      - name: Unit tests
+        run: |
+          npm ci
+          npm test -- --watch=false
 
   build:
     needs: test
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: gestion_stock_ui/hb_electronics
+        working-directory: ${{ github.workspace }}/gestion_stock_ui/hb_electronics
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: gestion_stock_ui/hb_electronics/package-lock.json
-      - run: npm ci
-      - run: npm run build
-      - run: npm pack
-      - uses: actions/upload-artifact@v4
-        with:
-          name: hb_electronics-package
-          path: gestion_stock_ui/hb_electronics/*.tgz
-
-  security_scan:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run Trivy filesystem scan
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'table'
-          exit-code: '0'
-          ignore-unfixed: true
-          severity: 'HIGH,CRITICAL'
+          node-version: '24'
+      - name: Build
+        run: |
+          npm ci
+          npm run build
 
   package:
-    needs: security_scan
+    needs: build
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/master' && vars.ENABLE_DEPLOY == 'true' }}
     defaults:
       run:
-        working-directory: gestion_stock_ui/hb_electronics
+        working-directory: ${{ github.workspace }}/gestion_stock_ui/hb_electronics
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: gestion_stock_ui/hb_electronics/package-lock.json
-      - run: npm ci
-      - run: npm run build
-      - name: Build Docker image
+          node-version: '24'
+      - name: Package + Docker build/push
         run: |
-          docker build -t ${{ env.REGISTRY_HOST }}/${{ env.REGISTRY_USERNAME }}/hb_electronics:${{ env.IMAGE_TAG }} .
-      - name: Push Docker image
-        run: |
-          echo ${{ env.REGISTRY_PASSWORD }} | docker login ${{ env.REGISTRY_HOST }} -u ${{ env.REGISTRY_USERNAME }} --password-stdin
-          docker push ${{ env.REGISTRY_HOST }}/${{ env.REGISTRY_USERNAME }}/hb_electronics:${{ env.IMAGE_TAG }}
+          npm pack
+          if [ -f Dockerfile ]; then
+            if [ -n "${REGISTRY_USERNAME:-}" ] && [ -n "${REGISTRY_PASSWORD:-}" ]; then
+              echo "$REGISTRY_PASSWORD" | docker login "$REGISTRY_HOST" -u "$REGISTRY_USERNAME" --password-stdin
+            fi
+            docker build -f Dockerfile -t "$IMAGE_TAG" .
+            docker push "$IMAGE_TAG"
+          else
+            echo 'Dockerfile not found; skipping image build and push.'
+          fi
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: hb_electronics-artifact
+          path: |
+            gestion_stock_ui/hb_electronics/dist/**
+            gestion_stock_ui/hb_electronics/*.tgz
+          if-no-files-found: warn
 
-  deploy:
+  security-scan:
     needs: package
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/master' && vars.ENABLE_DEPLOY == 'true' }}
     steps:
       - uses: actions/checkout@v4
-      - name: Deploy to Kubernetes
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: hb_electronics-artifact
+          path: artifact-output
+        continue-on-error: true
+      - name: Filesystem security scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: table
+          exit-code: '0'
+          ignore-unfixed: true
+          severity: HIGH,CRITICAL
+
+  deploy:
+    if: ${{ github.ref == 'refs/heads/master' && vars.ENABLE_DEPLOY == 'true' }}
+    needs: security-scan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}/gestion_stock_ui/hb_electronics
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy
         run: |
-          echo "Example deploy: kubectl apply -f k8s/"
-          echo "Example deploy: helm upgrade --install app ./chart"
+          echo 'Example deploy: kubectl apply -f k8s/'
+          echo 'Example deploy: helm upgrade --install app ./chart'

@@ -1,4 +1,4 @@
-name: gestiondestock-ci-cd
+name: gestiondestock CI/CD
 
 on:
   push:
@@ -7,16 +7,20 @@ on:
     branches: [master]
 
 env:
-  CI: "true"
   SERVICE_PATH: gestiondestock
+  JAVA_VERSION: '17'
+  REGISTRY_HOST: ${{ vars.REGISTRY_HOST }}
+  REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+  REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+  IMAGE_TAG: ${{ vars.IMAGE_TAG }}
+  ENABLE_DEPLOY: ${{ vars.ENABLE_DEPLOY }}
 
 jobs:
   test:
-    name: Unit Tests
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ${{ github.workspace }}/gestiondestock
+        working-directory: ${{ github.workspace }}/${{ env.SERVICE_PATH }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -24,9 +28,9 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: 'maven'
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+          cache: maven
 
       - name: Run unit tests
         env:
@@ -34,12 +38,11 @@ jobs:
         run: bash mvnw -B test -Dtest='!*ApplicationTests' -DfailIfNoTests=false
 
   build:
-    name: Build
     runs-on: ubuntu-latest
     needs: test
     defaults:
       run:
-        working-directory: ${{ github.workspace }}/gestiondestock
+        working-directory: ${{ github.workspace }}/${{ env.SERVICE_PATH }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -47,20 +50,19 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: 'maven'
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+          cache: maven
 
       - name: Build project
         run: bash mvnw -B -DskipTests clean compile
 
   package:
-    name: Package
     runs-on: ubuntu-latest
     needs: build
     defaults:
       run:
-        working-directory: ${{ github.workspace }}/gestiondestock
+        working-directory: ${{ github.workspace }}/${{ env.SERVICE_PATH }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -68,59 +70,9 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: 'maven'
-
-      - name: Package application
-        run: bash mvnw -B -DskipTests package
-
-      - name: Check for Dockerfile
-        id: check-dockerfile
-        run: |
-          if [ -f "Dockerfile" ]; then
-            echo "dockerfile_exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "dockerfile_exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Set up Docker Buildx
-        if: ${{ steps.check-dockerfile.outputs.dockerfile_exists == 'true' }}
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to container registry
-        if: ${{ steps.check-dockerfile.outputs.dockerfile_exists == 'true' }}
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY_HOST }}
-          username: ${{ env.REGISTRY_USERNAME }}
-          password: ${{ env.REGISTRY_PASSWORD }}
-
-      - name: Build and push Docker image
-        if: ${{ steps.check-dockerfile.outputs.dockerfile_exists == 'true' }}
-        uses: docker/build-push-action@v5
-        with:
-          context: ${{ github.workspace }}/gestiondestock
-          push: true
-          tags: ${{ env.IMAGE_TAG }}
-
-  upload_artifact:
-    name: Upload Artifact
-    runs-on: ubuntu-latest
-    needs: package
-    defaults:
-      run:
-        working-directory: ${{ github.workspace }}/gestiondestock
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: 'maven'
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+          cache: maven
 
       - name: Package application
         run: bash mvnw -B -DskipTests package
@@ -128,13 +80,55 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: gestiondestock-artifacts
+          name: gestiondestock-package
           path: |
-            gestiondestock/target/**
-          if-no-files-found: warn
+            ${{ github.workspace }}/${{ env.SERVICE_PATH }}/target/**
+
+      - name: Check for Dockerfile
+        id: check_dockerfile
+        run: |
+          if [ -f "${{ github.workspace }}/${{ env.SERVICE_PATH }}/Dockerfile" ]; then
+            echo "dockerfile_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "dockerfile_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up Docker Buildx
+        if: ${{ steps.check_dockerfile.outputs.dockerfile_exists == 'true' }}
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to container registry
+        if: ${{ steps.check_dockerfile.outputs.dockerfile_exists == 'true' }}
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY_HOST }}
+          username: ${{ env.REGISTRY_USERNAME }}
+          password: ${{ env.REGISTRY_PASSWORD }}
+
+      - name: Build and push Docker image
+        if: ${{ steps.check_dockerfile.outputs.dockerfile_exists == 'true' }}
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ github.workspace }}/${{ env.SERVICE_PATH }}
+          push: true
+          tags: ${{ env.REGISTRY_HOST }}/${{ env.REGISTRY_USERNAME }}/gestiondestock:${{ env.IMAGE_TAG }}
+
+  upload_artifact:
+    runs-on: ubuntu-latest
+    needs: package
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: gestiondestock-package
+          path: ${{ github.workspace }}/${{ env.SERVICE_PATH }}/target
+
+      - name: Upload to release storage
+        run: |
+          echo "Artifacts downloaded to ${{ github.workspace }}/${{ env.SERVICE_PATH }}/target"
+          echo "Upload artifact step completed"
 
   security_scan:
-    name: Security Scan
     runs-on: ubuntu-latest
     needs: upload_artifact
     steps:
@@ -152,24 +146,14 @@ jobs:
           severity: HIGH,CRITICAL
 
   deploy:
-    name: Deploy
     runs-on: ubuntu-latest
     needs: security_scan
     if: ${{ github.ref == 'refs/heads/master' && vars.ENABLE_DEPLOY == 'true' }}
-    defaults:
-      run:
-        working-directory: ${{ github.workspace }}/gestiondestock
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: gestiondestock-artifacts
-          path: gestiondestock/target
-
       - name: Deploy application
         run: |
-          echo 'Example deploy: java -jar target/*.jar'
-          echo 'Example deploy: kubectl rollout restart deployment/backend'
+          echo "Example deploy: java -jar target/*.jar"
+          echo "Example deploy: kubectl rollout restart deployment/backend"
