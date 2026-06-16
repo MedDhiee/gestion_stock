@@ -1,4 +1,4 @@
-name: CI/CD Pipeline for hb_electronics
+name: hb_electronics CI/CD
 
 on:
   push:
@@ -8,7 +8,6 @@ on:
 
 env:
   SERVICE_PATH: gestion_stock_ui/hb_electronics
-  NODE_VERSION: '18'
 
 jobs:
   test:
@@ -16,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ${{ github.workspace }}/gestion_stock_ui/hb_electronics
+        working-directory: ${{ github.workspace }}/${{ env.SERVICE_PATH }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -24,9 +23,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: '18'
           cache: 'npm'
-          cache-dependency-path: gestion_stock_ui/hb_electronics/package-lock.json
+          cache-dependency-path: ${{ env.SERVICE_PATH }}/package-lock.json
 
       - name: Install dependencies and run tests
         env:
@@ -41,7 +40,7 @@ jobs:
     needs: test
     defaults:
       run:
-        working-directory: ${{ github.workspace }}/gestion_stock_ui/hb_electronics
+        working-directory: ${{ github.workspace }}/${{ env.SERVICE_PATH }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -49,11 +48,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: '18'
           cache: 'npm'
-          cache-dependency-path: gestion_stock_ui/hb_electronics/package-lock.json
+          cache-dependency-path: ${{ env.SERVICE_PATH }}/package-lock.json
 
-      - name: Install dependencies and build
+      - name: Build application
         run: |
           npm ci
           npm run build
@@ -64,7 +63,7 @@ jobs:
     needs: build
     defaults:
       run:
-        working-directory: ${{ github.workspace }}/gestion_stock_ui/hb_electronics
+        working-directory: ${{ github.workspace }}/${{ env.SERVICE_PATH }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -72,20 +71,19 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: '18'
           cache: 'npm'
-          cache-dependency-path: gestion_stock_ui/hb_electronics/package-lock.json
+          cache-dependency-path: ${{ env.SERVICE_PATH }}/package-lock.json
 
-      - name: Install dependencies, build and package
+      - name: Package application
         run: |
           npm ci
-          npm run build
           npm pack
 
       - name: Check for Dockerfile
         id: check_dockerfile
         run: |
-          if [ -f "${{ github.workspace }}/gestion_stock_ui/hb_electronics/Dockerfile" ]; then
+          if [ -f "${{ github.workspace }}/${{ env.SERVICE_PATH }}/Dockerfile" ]; then
             echo "dockerfile_exists=true" >> $GITHUB_OUTPUT
           else
             echo "dockerfile_exists=false" >> $GITHUB_OUTPUT
@@ -107,9 +105,14 @@ jobs:
         if: ${{ steps.check_dockerfile.outputs.dockerfile_exists == 'true' }}
         uses: docker/build-push-action@v5
         with:
-          context: ${{ github.workspace }}/gestion_stock_ui/hb_electronics
+          context: ${{ github.workspace }}/${{ env.SERVICE_PATH }}
           push: true
           tags: ${{ env.IMAGE_TAG }}
+        env:
+          REGISTRY_HOST: ${{ env.REGISTRY_HOST }}
+          REGISTRY_USERNAME: ${{ env.REGISTRY_USERNAME }}
+          REGISTRY_PASSWORD: ${{ env.REGISTRY_PASSWORD }}
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
 
   upload_artifact:
     name: upload_artifact
@@ -122,12 +125,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: '18'
           cache: 'npm'
-          cache-dependency-path: gestion_stock_ui/hb_electronics/package-lock.json
+          cache-dependency-path: ${{ env.SERVICE_PATH }}/package-lock.json
 
-      - name: Install dependencies, build and package
-        working-directory: ${{ github.workspace }}/gestion_stock_ui/hb_electronics
+      - name: Build and package for artifact
+        working-directory: ${{ github.workspace }}/${{ env.SERVICE_PATH }}
         run: |
           npm ci
           npm run build
@@ -167,7 +170,7 @@ jobs:
     if: ${{ github.ref == 'refs/heads/master' && vars.ENABLE_DEPLOY == 'true' }}
     defaults:
       run:
-        working-directory: ${{ github.workspace }}/gestion_stock_ui/hb_electronics
+        working-directory: ${{ github.workspace }}/${{ env.SERVICE_PATH }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
