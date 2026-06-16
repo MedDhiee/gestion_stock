@@ -8,11 +8,6 @@ on:
 
 env:
   SERVICE_PATH: gestiondestock
-  REGISTRY_HOST: ${{ vars.REGISTRY_HOST }}
-  REGISTRY_USERNAME: ${{ vars.REGISTRY_USERNAME }}
-  REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
-  IMAGE_TAG: ${{ vars.IMAGE_TAG }}
-  ENABLE_DEPLOY: ${{ vars.ENABLE_DEPLOY }}
 
 jobs:
   test:
@@ -80,20 +75,20 @@ jobs:
         run: bash mvnw -B -DskipTests package
 
       - name: Check for Dockerfile
-        id: check_dockerfile
+        id: dockerfile_check
         run: |
           if [ -f Dockerfile ]; then
-            echo "dockerfile_exists=true" >> $GITHUB_OUTPUT
+            echo "exists=true" >> $GITHUB_OUTPUT
           else
-            echo "dockerfile_exists=false" >> $GITHUB_OUTPUT
+            echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Set up Docker Buildx
-        if: ${{ steps.check_dockerfile.outputs.dockerfile_exists == 'true' }}
+        if: ${{ steps.dockerfile_check.outputs.exists == 'true' }}
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to container registry
-        if: ${{ steps.check_dockerfile.outputs.dockerfile_exists == 'true' }}
+        if: ${{ steps.dockerfile_check.outputs.exists == 'true' }}
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY_HOST }}
@@ -101,20 +96,17 @@ jobs:
           password: ${{ env.REGISTRY_PASSWORD }}
 
       - name: Build and push Docker image
-        if: ${{ steps.check_dockerfile.outputs.dockerfile_exists == 'true' }}
+        if: ${{ steps.dockerfile_check.outputs.exists == 'true' }}
         uses: docker/build-push-action@v5
         with:
           context: ${{ github.workspace }}/gestiondestock
           push: true
-          tags: ${{ env.REGISTRY_HOST }}/${{ env.REGISTRY_USERNAME }}/${{ env.IMAGE_TAG }}:${{ github.sha }}
+          tags: ${{ env.IMAGE_TAG }}
 
   upload_artifact:
     name: upload_artifact
     runs-on: ubuntu-latest
     needs: package
-    defaults:
-      run:
-        working-directory: ${{ github.workspace }}/gestiondestock
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -127,6 +119,7 @@ jobs:
           cache: 'maven'
 
       - name: Package application for artifact
+        working-directory: ${{ github.workspace }}/gestiondestock
         run: bash mvnw -B -DskipTests package
 
       - name: Upload build artifacts
@@ -134,7 +127,6 @@ jobs:
         with:
           name: gestiondestock-artifacts
           path: gestiondestock/target/**
-          if-no-files-found: warn
 
   security_scan:
     name: security_scan
@@ -144,8 +136,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Run Trivy filesystem scan
+      - name: Filesystem security scan
         uses: aquasecurity/trivy-action@master
+        env:
+          TRIVY_OFFLINE_SCAN: "true"
         with:
           scan-type: fs
           scan-ref: '.'
