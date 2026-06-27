@@ -1,22 +1,25 @@
-name: CI/CD Pipeline for hb_electronics
+name: CI/CD hb_electronics
 
 on:
   push:
-    branches: [master]
+    branches:
+      - master
   pull_request:
-    branches: [master]
+    branches:
+      - master
 
 env:
-  SERVICE_PATH: gestion_stock_ui/hb_electronics
-  NODE_VERSION: '18'
+  REGISTRY_HOST: ${{ secrets.REGISTRY_HOST }}
+  REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+  REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+  IMAGE_TAG: ${{ secrets.IMAGE_TAG }}
 
 jobs:
   test:
-    name: Unit Tests
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ${{ github.workspace }}/${{ env.SERVICE_PATH }}
+        working-directory: ${{ github.workspace }}/gestion_stock_ui/hb_electronics
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -24,11 +27,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: ${{ env.SERVICE_PATH }}/package-lock.json
+          node-version: 18
+          cache: npm
+          cache-dependency-path: gestion_stock_ui/hb_electronics/package-lock.json
 
-      - name: Install dependencies and run tests
+      - name: Run unit tests
         env:
           CI: "true"
         run: |
@@ -36,12 +39,11 @@ jobs:
           npm test -- --watch=false
 
   build:
-    name: Build
+    runs-on: ubuntu-latest
     needs: test
-    runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ${{ github.workspace }}/${{ env.SERVICE_PATH }}
+        working-directory: ${{ github.workspace }}/gestion_stock_ui/hb_electronics
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -49,103 +51,95 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: ${{ env.SERVICE_PATH }}/package-lock.json
+          node-version: 18
+          cache: npm
+          cache-dependency-path: gestion_stock_ui/hb_electronics/package-lock.json
 
-      - name: Install dependencies and build
+      - name: Build application
         run: |
           npm ci
           npm run build
-
-  package:
-    name: Package
-    needs: build
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{ github.workspace }}/${{ env.SERVICE_PATH }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: ${{ env.SERVICE_PATH }}/package-lock.json
-
-      - name: Install dependencies, build and package
-        run: |
-          npm ci
-          npm run build
-          npm pack
-
-      - name: Check for Dockerfile
-        id: check_dockerfile
-        run: |
-          if [ -f "${{ github.workspace }}/${{ env.SERVICE_PATH }}/Dockerfile" ]; then
-            echo "dockerfile_exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "dockerfile_exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Set up Docker Buildx
-        if: ${{ steps.check_dockerfile.outputs.dockerfile_exists == 'true' }}
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to container registry
-        if: ${{ steps.check_dockerfile.outputs.dockerfile_exists == 'true' }}
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ secrets.REGISTRY_HOST }}
-          username: ${{ secrets.REGISTRY_USERNAME }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
-
-      - name: Build and push Docker image
-        if: ${{ steps.check_dockerfile.outputs.dockerfile_exists == 'true' }}
-        uses: docker/build-push-action@v5
-        with:
-          context: ${{ github.workspace }}/${{ env.SERVICE_PATH }}
-          push: true
-          tags: ${{ secrets.REGISTRY_HOST }}/${{ secrets.REGISTRY_USERNAME }}/hb_electronics:${{ secrets.IMAGE_TAG || 'latest' }}
-
-  upload_artifact:
-    name: Upload Artifact
-    needs: package
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: ${{ env.SERVICE_PATH }}/package-lock.json
-
-      - name: Install dependencies, build and package
-        working-directory: ${{ github.workspace }}/${{ env.SERVICE_PATH }}
-        run: |
-          npm ci
-          npm run build
-          npm pack
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: hb_electronics-artifacts
+          name: build-outputs
+          path: |
+            gestion_stock_ui/hb_electronics/dist/**
+          retention-days: 5
+
+  package:
+    runs-on: ubuntu-latest
+    needs: build
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}/gestion_stock_ui/hb_electronics
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: gestion_stock_ui/hb_electronics/package-lock.json
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-outputs
+          path: gestion_stock_ui/hb_electronics/dist
+
+      - name: Package application
+        run: |
+          npm ci
+          npm pack
+
+      - name: Upload package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-outputs
           path: |
             gestion_stock_ui/hb_electronics/dist/**
             gestion_stock_ui/hb_electronics/*.tgz
-          if-no-files-found: warn
+          retention-days: 5
+
+      - name: Docker build and push
+        run: |
+          if [ -f Dockerfile ]; then
+            echo "${REGISTRY_PASSWORD}" | docker login "${REGISTRY_HOST}" -u "${REGISTRY_USERNAME}" --password-stdin
+            docker build -t "${REGISTRY_HOST}/${IMAGE_TAG}" .
+            docker push "${REGISTRY_HOST}/${IMAGE_TAG}"
+          else
+            echo "Dockerfile not found. Skipping Docker build and push."
+          fi
+
+  upload_artifact:
+    runs-on: ubuntu-latest
+    needs: package
+    steps:
+      - name: Download package artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: package-outputs
+          path: gestion_stock_ui/hb_electronics
+
+      - name: Upload final artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-artifacts
+          path: |
+            gestion_stock_ui/hb_electronics/dist/**
+            gestion_stock_ui/hb_electronics/*.tgz
+          retention-days: 7
 
   security_scan:
-    name: Security Scan
-    needs: upload_artifact
     runs-on: ubuntu-latest
+    needs: upload_artifact
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}/gestion_stock_ui/hb_electronics
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -156,23 +150,28 @@ jobs:
           TRIVY_OFFLINE_SCAN: "true"
         with:
           scan-type: fs
-          scan-ref: '.'
+          scan-ref: .
           format: table
           exit-code: '0'
           ignore-unfixed: true
           severity: HIGH,CRITICAL
 
   deploy:
-    name: Deploy
+    runs-on: ubuntu-latest
     needs: security_scan
     if: ${{ github.ref == 'refs/heads/master' && vars.ENABLE_DEPLOY == 'true' }}
-    runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ${{ github.workspace }}/${{ env.SERVICE_PATH }}
+        working-directory: ${{ github.workspace }}/gestion_stock_ui/hb_electronics
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Download final artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: final-artifacts
+          path: gestion_stock_ui/hb_electronics
 
       - name: Deploy application
         run: |
